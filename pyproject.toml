@@ -1,7 +1,7 @@
 [project]
 name = "puzzlebox"
 version = "0.1.0"
-description = "Add your description here"
+description = "A lightweight Python desktop quiz application with multiple-choice questions, scoring, and extensible question sources."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -21,3 +21,30 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[project.scripts]
+puzzlebox = "puzzlebox.main:main"
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
