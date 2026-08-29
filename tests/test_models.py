@@ -2,7 +2,7 @@
 
 import pytest
 
-from puzzlebox.models import Difficulty, Question
+from puzzlebox.models import Difficulty, Question, Quiz
 
 
 def test_question_can_be_created() -> None:
@@ -90,3 +90,56 @@ def test_question_rejects_empty_category() -> None:
             category=" ",
             difficulty=Difficulty.EASY,
         )
+
+
+def create_question(number: int) -> Question:
+    """Create a test question with a unique value."""
+    return Question(
+        text=f"Question {number}",
+        answers=("A", "B", "C"),
+        correct_answer="A",
+        category="Test",
+        difficulty=Difficulty.EASY,
+    )
+
+
+def test_quiz_can_be_created() -> None:
+    """Test creating a quiz with questions."""
+    question_one = create_question(1)
+    question_two = create_question(2)
+
+    quiz = Quiz(questions=(question_one, question_two))
+
+    assert len(quiz) == 2
+    assert quiz.questions == (question_one, question_two)
+
+
+def test_quiz_returns_question_by_index() -> None:
+    """Test retrieving a question by index."""
+    question_one = create_question(1)
+    question_two = create_question(2)
+
+    quiz = Quiz(questions=(question_one, question_two))
+
+    assert quiz.get_question(0) is question_one
+    assert quiz.get_question(1) is question_two
+
+
+def test_quiz_rejects_empty_questions() -> None:
+    """Test that an empty quiz is rejected."""
+    with pytest.raises(
+        ValueError,
+        match="A quiz must contain at least one question",
+    ):
+        Quiz(questions=())
+
+
+def test_quiz_rejects_invalid_question_index() -> None:
+    """Test that an invalid question index raises an error."""
+    quiz = Quiz(questions=(create_question(1),))
+
+    with pytest.raises(
+        IndexError,
+        match="Question index out of range: 5",
+    ):
+        quiz.get_question(5)
