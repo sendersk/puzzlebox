@@ -38,3 +38,28 @@ class Question:
 
         if not self.category.strip():
             raise ValueError("Question category cannot be empty.")
+
+
+@dataclass(frozen=True, slots=True)
+class Quiz:
+    """Represent a collection of quiz questions."""
+
+    questions: tuple[Question, ...]
+
+    def __post_init__(self) -> None:
+        """Validate the quiz after initialization."""
+        if not self.questions:
+            raise ValueError("A quiz must contain at least one question.")
+
+    def __len__(self) -> int:
+        """Return the number of questions in the quiz."""
+        return len(self.questions)
+
+    def get_question(self, index: int) -> Question:
+        """Return a question at the given index."""
+        try:
+            return self.questions[index]
+        except IndexError as exc:
+            raise IndexError(
+                f"Question index out of range: {index}",
+            ) from exc
