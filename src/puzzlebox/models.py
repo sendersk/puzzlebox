@@ -63,3 +63,44 @@ class Quiz:
             raise IndexError(
                 f"Question index out of range: {index}",
             ) from exc
+
+
+@dataclass(slots=True)
+class QuizSession:
+    """Represent the state of an active quiz session."""
+
+    quiz: Quiz
+    current_index: int = 0
+    score: int = 0
+    answered_count: int = 0
+
+    @property
+    def current_question(self) -> Question:
+        """Return the question currently being displayed."""
+        return self.quiz.get_question(self.current_index)
+
+    @property
+    def is_finished(self) -> bool:
+        """Return whether all questions have been answered."""
+        return self.answered_count >= len(self.quiz)
+
+    def answer_current_question(self, answer: str) -> bool:
+        """Answer the current question and return whether the answer is correct."""
+        if self.is_finished:
+            raise RuntimeError("The quiz session has already finished.")
+
+        is_correct = answer == self.current_question.correct_answer
+
+        if is_correct:
+            self.score += 1
+
+        self.answered_count += 1
+
+        return is_correct
+
+    def next_question(self) -> None:
+        """Move the session to the next question."""
+        if self.is_finished:
+            return
+
+        self.current_index += 1
