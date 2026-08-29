@@ -2,7 +2,7 @@
 
 import pytest
 
-from puzzlebox.models import Difficulty, Question, Quiz
+from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
 
 
 def test_question_can_be_created() -> None:
@@ -143,3 +143,80 @@ def test_quiz_rejects_invalid_question_index() -> None:
         match="Question index out of range: 5",
     ):
         quiz.get_question(5)
+
+
+def test_quiz_session_starts_with_first_question() -> None:
+    """Test that a quiz session starts with the first question."""
+    question_one = create_question(1)
+    question_two = create_question(2)
+    quiz = Quiz(questions=(question_one, question_two))
+
+    session = QuizSession(quiz)
+
+    assert session.current_question is question_one
+    assert session.current_index == 0
+    assert session.score == 0
+    assert session.answered_count == 0
+    assert session.is_finished is False
+
+
+def test_quiz_session_increments_score_for_correct_answer() -> None:
+    """Test that a correct answer increases the score."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    result = session.answer_current_question("A")
+
+    assert result is True
+    assert session.score == 1
+    assert session.answered_count == 1
+
+
+def test_quiz_session_does_not_increment_score_for_wrong_answer() -> None:
+    """Test that an incorrect answer does not increase the score."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    result = session.answer_current_question("B")
+
+    assert result is False
+    assert session.score == 0
+    assert session.answered_count == 1
+
+
+def test_quiz_session_moves_to_next_question() -> None:
+    """Test moving from one question to the next."""
+    question_one = create_question(1)
+    question_two = create_question(2)
+    quiz = Quiz(questions=(question_one, question_two))
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+    session.next_question()
+
+    assert session.current_question is question_two
+    assert session.current_index == 1
+
+
+def test_quiz_session_finishes_after_all_questions_are_answered() -> None:
+    """Test that the session is finished after the final answer."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+
+    assert session.is_finished is True
+
+
+def test_quiz_session_rejects_answers_after_completion() -> None:
+    """Test that answers cannot be submitted after the quiz is finished."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+
+    with pytest.raises(
+        RuntimeError,
+        match="The quiz session has already finished",
+    ):
+        session.answer_current_question("A")
