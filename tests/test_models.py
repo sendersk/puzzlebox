@@ -289,3 +289,51 @@ def test_quiz_session_calculates_partial_percentage() -> None:
     assert session.score == 2
     assert session.answered_count == 3
     assert session.percentage == pytest.approx(66.67, abs=0.01)
+
+
+def test_quiz_session_is_not_finished_before_final_answer() -> None:
+    """Test that the session remains active before the final answer."""
+    quiz = Quiz(
+        questions=(
+            create_question(1),
+            create_question(2),
+        )
+    )
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+
+    assert session.is_finished is False
+    assert session.answered_count == 1
+
+
+def test_quiz_session_finishes_after_final_answer() -> None:
+    """Test that the session finishes after the final answer."""
+    quiz = Quiz(
+        questions=(
+            create_question(1),
+            create_question(2),
+        )
+    )
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+    session.next_question()
+    session.answer_current_question("B")
+
+    assert session.is_finished is True
+    assert session.answered_count == 2
+    assert session.current_index == 1
+
+
+def test_quiz_session_does_not_advance_after_completion() -> None:
+    """Test that the session cannot advance after completion."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+
+    session.next_question()
+
+    assert session.current_index == 0
+    assert session.is_finished is True
