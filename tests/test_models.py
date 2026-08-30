@@ -220,3 +220,72 @@ def test_quiz_session_rejects_answers_after_completion() -> None:
         match="The quiz session has already finished",
     ):
         session.answer_current_question("A")
+
+
+def test_quiz_session_reports_total_questions() -> None:
+    """Test that a session reports the total number of questions."""
+    quiz = Quiz(
+        questions=(
+            create_question(1),
+            create_question(2),
+            create_question(3),
+        )
+    )
+
+    session = QuizSession(quiz)
+
+    assert session.total_questions == 3
+
+
+def test_quiz_session_percentage_is_zero_before_answering() -> None:
+    """Test that the initial percentage is zero."""
+    quiz = Quiz(questions=(create_question(1),))
+    session = QuizSession(quiz)
+
+    assert session.percentage == 0.0
+
+
+def test_quiz_session_percentage_is_100_for_all_correct_answers() -> None:
+    """Test that all correct answers produce a 100 percent score."""
+    quiz = Quiz(
+        questions=(
+            create_question(1),
+            create_question(2),
+        )
+    )
+
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+    session.next_question()
+    session.answer_current_question("A")
+
+    assert session.score == 2
+    assert session.answered_count == 2
+    assert session.percentage == 100.0
+
+
+def test_quiz_session_calculates_partial_percentage() -> None:
+    """Test calculating the percentage of correct answers."""
+    quiz = Quiz(
+        questions=(
+            create_question(1),
+            create_question(2),
+            create_question(3),
+            create_question(4),
+        )
+    )
+
+    session = QuizSession(quiz)
+
+    session.answer_current_question("A")
+    session.next_question()
+
+    session.answer_current_question("B")
+    session.next_question()
+
+    session.answer_current_question("A")
+
+    assert session.score == 2
+    assert session.answered_count == 3
+    assert session.percentage == pytest.approx(66.67, abs=0.01)
