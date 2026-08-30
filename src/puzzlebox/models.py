@@ -104,3 +104,16 @@ class QuizSession:
             return
 
         self.current_index += 1
+
+    @property
+    def total_questions(self) -> int:
+        """Return the total number of questions in the quiz."""
+        return len(self.quiz)
+
+    @property
+    def percentage(self) -> float:
+        """Return the percentage of correctly answered questions."""
+        if self.answered_count == 0:
+            return 0.0
+
+        return self.score / self.answered_count * 100
