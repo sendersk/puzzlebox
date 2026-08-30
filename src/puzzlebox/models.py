@@ -73,6 +73,7 @@ class QuizSession:
     current_index: int = 0
     score: int = 0
     answered_count: int = 0
+    finished: bool = False
 
     @property
     def current_question(self) -> Question:
@@ -81,29 +82,8 @@ class QuizSession:
 
     @property
     def is_finished(self) -> bool:
-        """Return whether all questions have been answered."""
-        return self.answered_count >= len(self.quiz)
-
-    def answer_current_question(self, answer: str) -> bool:
-        """Answer the current question and return whether the answer is correct."""
-        if self.is_finished:
-            raise RuntimeError("The quiz session has already finished.")
-
-        is_correct = answer == self.current_question.correct_answer
-
-        if is_correct:
-            self.score += 1
-
-        self.answered_count += 1
-
-        return is_correct
-
-    def next_question(self) -> None:
-        """Move the session to the next question."""
-        if self.is_finished:
-            return
-
-        self.current_index += 1
+        """Return whether the quiz session has finished."""
+        return self.finished
 
     @property
     def total_questions(self) -> int:
@@ -117,3 +97,27 @@ class QuizSession:
             return 0.0
 
         return self.score / self.answered_count * 100
+
+    def answer_current_question(self, answer: str) -> bool:
+        """Answer the current question and return whether the answer is correct."""
+        if self.is_finished:
+            raise RuntimeError("The quiz session has already finished.")
+
+        is_correct = answer == self.current_question.correct_answer
+
+        if is_correct:
+            self.score += 1
+
+        self.answered_count += 1
+
+        if self.answered_count == self.total_questions:
+            self.finished = True
+
+        return is_correct
+
+    def next_question(self) -> None:
+        """Move the session to the next question."""
+        if self.is_finished:
+            return
+
+        self.current_index += 1
