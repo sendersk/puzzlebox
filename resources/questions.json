@@ -1,0 +1,40 @@
+{
+  "questions": [
+    {
+      "text": "What is the output of 2 ** 3?",
+      "answers": [
+        "5",
+        "6",
+        "8",
+        "9"
+      ],
+      "correct_answer": "8",
+      "category": "Python",
+      "difficulty": "easy"
+    },
+    {
+      "text": "Which keyword is used to define a function in Python?",
+      "answers": [
+        "func",
+        "def",
+        "function",
+        "define"
+      ],
+      "correct_answer": "def",
+      "category": "Python",
+      "difficulty": "easy"
+    },
+    {
+      "text": "Which collection type is immutable?",
+      "answers": [
+        "list",
+        "set",
+        "tuple",
+        "dict"
+      ],
+      "correct_answer": "tuple",
+      "category": "Python",
+      "difficulty": "medium"
+    }
+  ]
+}
