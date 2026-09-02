@@ -1,17 +1,16 @@
-from pathlib import Path
-
 from puzzlebox.main import main
 
 
 def test_main(monkeypatch) -> None:
-    """Test that the application entry point starts the quiz."""
-    called_with: dict[str, Path] = {}
+    """Test that the application entry point starts the CLI."""
+    called = False
 
-    def fake_run_quiz(questions_path: Path) -> None:
-        called_with["path"] = questions_path
+    def fake_app() -> None:
+        nonlocal called
+        called = True
 
-    monkeypatch.setattr("puzzlebox.main.run_quiz", fake_run_quiz)
+    monkeypatch.setattr("puzzlebox.main.app", fake_app)
 
     main()
 
-    assert called_with["path"] == Path("resources/questions.json")
+    assert called

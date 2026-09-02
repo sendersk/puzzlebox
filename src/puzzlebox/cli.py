@@ -1,7 +1,6 @@
 """Command-line interface for PuzzleBox."""
 
 from pathlib import Path
-
 from typing import Annotated
 
 import typer

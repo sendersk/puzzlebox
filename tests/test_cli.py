@@ -113,5 +113,5 @@ def test_cli_rejects_missing_questions_file(tmp_path: Path) -> None:
         ["--questions", str(questions_path)],
     )
 
-    assert result.exit_code != 0
-    assert "does not exist" in result.stdout
+    assert result.exit_code == 2
+    assert "does not exist" in result.stderr
