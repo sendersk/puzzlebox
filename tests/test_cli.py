@@ -5,6 +5,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from puzzlebox.cli import app, run_quiz
+from puzzlebox.config import AppConfig
 
 runner = CliRunner()
 
@@ -115,3 +116,59 @@ def test_cli_rejects_missing_questions_file(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert "does not exist" in result.stderr
+
+
+def test_cli_uses_configured_questions_path(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that the CLI uses the configured questions path by default."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, Path] = {}
+
+    def fake_run_quiz(path: Path) -> None:
+        called_with["path"] = path
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(questions_path=questions_path),
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called_with["path"] == questions_path
+
+
+def test_cli_option_overrides_config(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that the CLI option overrides the configured questions path."""
+    configured_path = tmp_path / "configured.json"
+    cli_path = tmp_path / "cli.json"
+
+    configured_path.write_text("[]", encoding="utf-8")
+    cli_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, Path] = {}
+
+    def fake_run_quiz(path: Path) -> None:
+        called_with["path"] = path
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(questions_path=configured_path),
+    )
+
+    result = runner.invoke(
+        app,
+        ["--questions", str(cli_path)],
+    )
+
+    assert result.exit_code == 0
+    assert called_with["path"] == cli_path
