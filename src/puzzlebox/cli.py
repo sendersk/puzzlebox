@@ -5,6 +5,7 @@ from typing import Annotated
 
 import typer
 
+from puzzlebox.config import load_config
 from puzzlebox.models import QuizSession
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
@@ -18,7 +19,7 @@ app = typer.Typer(
 @app.callback(invoke_without_command=True)
 def cli(
     questions: Annotated[
-        Path,
+        Path | None,
         typer.Option(
             "--questions",
             "-q",
@@ -28,10 +29,14 @@ def cli(
             dir_okay=False,
             readable=True,
         ),
-    ] = Path("resources/questions.json"),
+    ] = None,
 ) -> None:
     """Start the PuzzleBox quiz."""
-    run_quiz(questions)
+    config = load_config(Path("config/settings.yaml"))
+
+    questions_path = questions or config.questions_path
+
+    run_quiz(questions_path)
 
 
 def run_quiz(questions_path: Path) -> None:
