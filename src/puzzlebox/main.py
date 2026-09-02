@@ -1,14 +1,9 @@
-"""PuzzleBox application entry point."""
-
-from pathlib import Path
-
-from puzzlebox.cli import run_quiz
+from puzzlebox.cli import app
 
 
 def main() -> None:
-    """Run the PuzzleBox application."""
-    questions_path = Path("resources/questions.json")
-    run_quiz(questions_path)
+    """Start the PuzzleBox command-line application."""
+    app()
 
 
 if __name__ == "__main__":

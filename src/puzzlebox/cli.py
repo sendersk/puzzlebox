@@ -2,10 +2,38 @@
 
 from pathlib import Path
 
+from typing import Annotated
+
+import typer
+
 from puzzlebox.models import QuizSession
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
+
+app = typer.Typer(
+    add_completion=False,
+    no_args_is_help=True,
+)
+
+
+@app.callback()
+def cli(
+    questions: Annotated[
+        Path,
+        typer.Option(
+            "--questions",
+            "-q",
+            help="Path to the JSON file containing quiz questions.",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = Path("resources/questions.json"),
+) -> None:
+    """Start the PuzzleBox quiz."""
+    run_quiz(questions)
 
 
 def run_quiz(questions_path: Path) -> None:
