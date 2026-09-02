@@ -63,3 +63,14 @@ def test_runner_moves_to_next_question() -> None:
 
     assert question.number == 2
     assert question.text == "What is 3 + 3?"
+
+
+def test_runner_exposes_session_state() -> None:
+    """Test that the runner exposes relevant session state."""
+    session = QuizSession(create_quiz())
+    runner = QuizRunner(session)
+
+    assert runner.score == 0
+    assert runner.total_questions == 2
+    assert runner.percentage == 0.0
+    assert runner.is_finished is False
