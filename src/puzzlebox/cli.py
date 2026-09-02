@@ -13,11 +13,10 @@ from puzzlebox.runner import QuizRunner
 
 app = typer.Typer(
     add_completion=False,
-    no_args_is_help=True,
 )
 
 
-@app.callback()
+@app.callback(invoke_without_command=True)
 def cli(
     questions: Annotated[
         Path,
