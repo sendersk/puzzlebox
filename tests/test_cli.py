@@ -5,7 +5,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from puzzlebox.cli import app, run_quiz
-from puzzlebox.config import AppConfig
+from puzzlebox.config import AppConfig, ConfigurationError
 
 runner = CliRunner()
 
@@ -172,3 +172,48 @@ def test_cli_option_overrides_config(
 
     assert result.exit_code == 0
     assert called_with["path"] == cli_path
+
+
+def test_cli_reports_configuration_error(monkeypatch) -> None:
+    """Test that configuration errors are reported to the user."""
+
+    def fake_load_config(_: Path) -> None:
+        raise ConfigurationError("Invalid configuration data.")
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        fake_load_config,
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 1
+    assert "Error: Invalid configuration data." in result.stderr
+
+
+def test_cli_does_not_start_quiz_when_configuration_fails(
+    monkeypatch,
+) -> None:
+    """Test that the quiz is not started after a configuration error."""
+    called = False
+
+    def fake_load_config(_: Path) -> None:
+        raise ConfigurationError("Configuration failed.")
+
+    def fake_run_quiz(_: Path) -> None:
+        nonlocal called
+        called = True
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        fake_load_config,
+    )
+    monkeypatch.setattr(
+        "puzzlebox.cli.run_quiz",
+        fake_run_quiz,
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 1
+    assert called is False
