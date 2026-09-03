@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from puzzlebox.config import load_config
+from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
@@ -32,7 +32,11 @@ def cli(
     ] = None,
 ) -> None:
     """Start the PuzzleBox quiz."""
-    config = load_config(Path("config/settings.yaml"))
+    try:
+        config = load_config(Path("config/settings.yaml"))
+    except ConfigurationError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
     questions_path = questions or config.questions_path
 
