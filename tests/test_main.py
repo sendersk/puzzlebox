@@ -1,8 +1,11 @@
+import logging
+
 from puzzlebox.main import main
 
 
 def test_main_configures_logging_before_starting_cli(
     monkeypatch,
+    caplog,
 ) -> None:
     """Test that logging is configured before the CLI starts."""
     calls: list[str] = []
@@ -22,6 +25,8 @@ def test_main_configures_logging_before_starting_cli(
         fake_app,
     )
 
-    main()
+    with caplog.at_level(logging.INFO, logger="puzzlebox.main"):
+        main()
 
     assert calls == ["logging", "app"]
+    assert "PuzzleBox started" in caplog.text
