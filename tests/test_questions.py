@@ -1,8 +1,11 @@
 """Tests for question data loading."""
-
+import json
 from pathlib import Path
 
+import logging
 import pytest
+
+
 from pydantic import ValidationError
 
 from puzzlebox.models import Difficulty
@@ -119,3 +122,33 @@ def test_load_questions_rejects_missing_required_field(
 
     with pytest.raises(ValidationError):
         load_questions(questions_file)
+
+
+def test_load_questions_logs_loading_information(
+    tmp_path: Path,
+    caplog,
+) -> None:
+    """Test that loading questions emits useful log messages."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        json.dumps(
+            {
+                "questions": [
+                    {
+                        "id": "q1",
+                        "question": "What is Python?",
+                        "options": ["A", "B", "C", "D"],
+                        "correct_answer": "A",
+                        "difficulty": "easy",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with caplog.at_level(logging.INFO, logger="puzzlebox.questions"):
+        load_questions(questions_path)
+
+    assert f"Loading questions from {questions_path}" in caplog.text
+    assert f"Loaded 1 questions from {questions_path}" in caplog.text
