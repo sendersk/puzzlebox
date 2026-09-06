@@ -1,11 +1,10 @@
 """Tests for question data loading."""
+
 import json
+import logging
 from pathlib import Path
 
-import logging
 import pytest
-
-
 from pydantic import ValidationError
 
 from puzzlebox.models import Difficulty
@@ -135,10 +134,10 @@ def test_load_questions_logs_loading_information(
             {
                 "questions": [
                     {
-                        "id": "q1",
-                        "question": "What is Python?",
-                        "options": ["A", "B", "C", "D"],
+                        "text": "What is Python?",
+                        "answers": ["A", "B", "C", "D"],
                         "correct_answer": "A",
+                        "category": "Python",
                         "difficulty": "easy",
                     }
                 ]
@@ -148,7 +147,8 @@ def test_load_questions_logs_loading_information(
     )
 
     with caplog.at_level(logging.INFO, logger="puzzlebox.questions"):
-        load_questions(questions_path)
+        questions = load_questions(questions_path)
 
+    assert len(questions) == 1
     assert f"Loading questions from {questions_path}" in caplog.text
     assert f"Loaded 1 questions from {questions_path}" in caplog.text
