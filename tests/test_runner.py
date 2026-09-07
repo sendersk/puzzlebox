@@ -1,5 +1,7 @@
 """Tests for the quiz runner."""
 
+import logging
+
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
 from puzzlebox.runner import QuizRunner
 
@@ -74,3 +76,62 @@ def test_runner_exposes_session_state() -> None:
     assert runner.total_questions == 2
     assert runner.percentage == 0.0
     assert runner.is_finished is False
+
+
+def test_answer_logs_result(caplog) -> None:
+    """Test that answering a question logs the result."""
+    question = Question(
+        text="What is Python?",
+        answers=("Language", "Database"),
+        correct_answer="Language",
+        category="Python",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    session = QuizSession(quiz)
+    runner = QuizRunner(session)
+
+    with caplog.at_level(logging.INFO, logger="puzzlebox.runner"):
+        result = runner.answer("Language")
+
+    assert result is True
+    assert "Question answered: correct" in caplog.text
+
+
+def test_answer_logs_incorrect_result(caplog) -> None:
+    """Test that an incorrect answer is logged."""
+    question = Question(
+        text="What is Python?",
+        answers=("Language", "Database"),
+        correct_answer="Language",
+        category="Python",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    session = QuizSession(quiz)
+    runner = QuizRunner(session)
+
+    with caplog.at_level(logging.INFO, logger="puzzlebox.runner"):
+        result = runner.answer("Database")
+
+    assert result is False
+    assert "Question answered: incorrect" in caplog.text
+
+
+def test_answer_logs_quiz_completion(caplog) -> None:
+    """Test that completing the quiz logs the final score."""
+    question = Question(
+        text="What is Python?",
+        answers=("Language", "Database"),
+        correct_answer="Language",
+        category="Python",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    session = QuizSession(quiz)
+    runner = QuizRunner(session)
+
+    with caplog.at_level(logging.INFO, logger="puzzlebox.runner"):
+        runner.answer("Language")
+
+    assert "Quiz finished: score=1/1 (100.0%)" in caplog.text
