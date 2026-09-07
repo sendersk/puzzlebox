@@ -1,5 +1,6 @@
 """Tests for question repositories."""
 
+import logging
 from pathlib import Path
 
 from puzzlebox.models import Question
@@ -59,3 +60,36 @@ def test_json_repository_matches_protocol() -> None:
     )
 
     assert repository.get_questions()
+
+
+def test_json_repository_logs_fetch(
+    tmp_path: Path,
+    caplog,
+) -> None:
+    """Test that the JSON repository logs question retrieval."""
+    questions_file = tmp_path / "questions.json"
+
+    questions_file.write_text(
+        """
+        {
+            "questions": [
+                {
+                    "text": "What is Python?",
+                    "answers": ["Language", "Database"],
+                    "correct_answer": "Language",
+                    "category": "Python",
+                    "difficulty": "easy"
+                }
+            ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    repository = JsonQuestionRepository(questions_file)
+
+    with caplog.at_level(logging.INFO, logger="puzzlebox.repositories"):
+        questions = repository.get_questions()
+
+    assert len(questions) == 1
+    assert f"Fetching questions from repository: {questions_file}" in caplog.text
