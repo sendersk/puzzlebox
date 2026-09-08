@@ -4,7 +4,7 @@ import json
 import logging
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from puzzlebox.models import Difficulty, Question
 
@@ -39,20 +39,37 @@ def load_questions(path: Path) -> tuple[Question, ...]:
     """Load and validate quiz questions from a JSON file."""
     logger.info("Loading questions from %s", path)
 
-    content = path.read_text(encoding="utf-8")
-    data = json.loads(content)
-    collection = QuestionCollection.model_validate(data)
+    try:
+        content = path.read_text(encoding="utf-8")
+        data = json.loads(content)
+        collection = QuestionCollection.model_validate(data)
 
-    questions = tuple(
-        Question(
-            text=item.text,
-            answers=tuple(item.answers),
-            correct_answer=item.correct_answer,
-            category=item.category,
-            difficulty=item.difficulty,
+        questions = tuple(
+            Question(
+                text=item.text,
+                answers=tuple(item.answers),
+                correct_answer=item.correct_answer,
+                category=item.category,
+                difficulty=item.difficulty,
+            )
+            for item in collection.questions
         )
-        for item in collection.questions
-    )
+    except OSError as exc:
+        raise QuestionLoadingError(
+            f"Unable to read questions file: {path}"
+        ) from exc
+    except json.JSONDecodeError as exc:
+        raise QuestionLoadingError(
+            f"Invalid JSON in questions file: {path}"
+        ) from exc
+    except ValidationError as exc:
+        raise QuestionLoadingError(
+            f"Invalid question data in: {path}"
+        ) from exc
+    except ValueError as exc:
+        raise QuestionLoadingError(
+            f"Invalid question data in: {path}"
+        ) from exc
 
     logger.info("Loaded %d questions from %s", len(questions), path)
 
