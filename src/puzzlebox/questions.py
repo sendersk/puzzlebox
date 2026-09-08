@@ -11,6 +11,10 @@ from puzzlebox.models import Difficulty, Question
 logger = logging.getLogger(__name__)
 
 
+class QuestionLoadingError(Exception):
+    """Raised when quiz questions cannot be loaded."""
+
+
 class QuestionData(BaseModel):
     """Validated question data loaded from JSON."""
 
