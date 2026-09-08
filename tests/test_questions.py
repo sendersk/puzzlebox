@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from puzzlebox.models import Difficulty
-from puzzlebox.questions import load_questions
+from puzzlebox.questions import QuestionLoadingError, load_questions
 
 
 def test_load_questions_from_json(tmp_path: Path) -> None:
@@ -152,3 +152,8 @@ def test_load_questions_logs_loading_information(
     assert len(questions) == 1
     assert f"Loading questions from {questions_path}" in caplog.text
     assert f"Loaded 1 questions from {questions_path}" in caplog.text
+
+
+def test_question_loading_error_is_an_exception() -> None:
+    """Test that QuestionLoadingError is an exception."""
+    assert issubclass(QuestionLoadingError, Exception)
