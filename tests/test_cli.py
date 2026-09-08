@@ -2,10 +2,12 @@
 
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from puzzlebox.cli import app, run_quiz
 from puzzlebox.config import AppConfig, ConfigurationError
+from puzzlebox.questions import QuestionLoadingError
 
 runner = CliRunner()
 
@@ -217,3 +219,30 @@ def test_cli_does_not_start_quiz_when_configuration_fails(
 
     assert result.exit_code == 1
     assert called is False
+
+
+def test_run_quiz_reports_question_loading_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Test that question loading errors are reported by the CLI."""
+    questions_file = tmp_path / "questions.json"
+    questions_file.write_text("{}", encoding="utf-8")
+
+    def raise_loading_error(
+        path: Path,
+    ) -> tuple:
+        raise QuestionLoadingError("Invalid question data.")
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.JsonQuestionRepository.get_questions",
+        raise_loading_error,
+    )
+
+    result = runner.invoke(
+        app,
+        ["--questions", str(questions_file)],
+    )
+
+    assert result.exit_code == 1
+    assert "Error: Invalid question data." in result.stderr
