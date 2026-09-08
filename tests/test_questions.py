@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
 
 from puzzlebox.models import Difficulty
 from puzzlebox.questions import QuestionLoadingError, load_questions
@@ -65,7 +64,7 @@ def test_load_questions_rejects_invalid_difficulty(
         encoding="utf-8",
     )
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(QuestionLoadingError):
         load_questions(questions_file)
 
 
@@ -93,7 +92,7 @@ def test_load_questions_rejects_unknown_fields(
         encoding="utf-8",
     )
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(QuestionLoadingError):
         load_questions(questions_file)
 
 
@@ -119,7 +118,7 @@ def test_load_questions_rejects_missing_required_field(
         encoding="utf-8",
     )
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(QuestionLoadingError):
         load_questions(questions_file)
 
 
