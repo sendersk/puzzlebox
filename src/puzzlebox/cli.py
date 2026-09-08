@@ -7,6 +7,7 @@ import typer
 
 from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
+from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
@@ -45,8 +46,13 @@ def cli(
 
 def run_quiz(questions_path: Path) -> None:
     """Run a quiz using questions from the given JSON file."""
-    repository = JsonQuestionRepository(questions_path)
-    quiz = create_quiz(repository)
+    try:
+        repository = JsonQuestionRepository(questions_path)
+        quiz = create_quiz(repository)
+    except QuestionLoadingError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
     runner = QuizRunner(QuizSession(quiz))
 
     print("PuzzleBox")
