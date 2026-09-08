@@ -55,21 +55,13 @@ def load_questions(path: Path) -> tuple[Question, ...]:
             for item in collection.questions
         )
     except OSError as exc:
-        raise QuestionLoadingError(
-            f"Unable to read questions file: {path}"
-        ) from exc
+        raise QuestionLoadingError(f"Unable to read questions file: {path}") from exc
     except json.JSONDecodeError as exc:
-        raise QuestionLoadingError(
-            f"Invalid JSON in questions file: {path}"
-        ) from exc
+        raise QuestionLoadingError(f"Invalid JSON in questions file: {path}") from exc
     except ValidationError as exc:
-        raise QuestionLoadingError(
-            f"Invalid question data in: {path}"
-        ) from exc
+        raise QuestionLoadingError(f"Invalid question data in: {path}") from exc
     except ValueError as exc:
-        raise QuestionLoadingError(
-            f"Invalid question data in: {path}"
-        ) from exc
+        raise QuestionLoadingError(f"Invalid question data in: {path}") from exc
 
     logger.info("Loaded %d questions from %s", len(questions), path)
 
