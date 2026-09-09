@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 from puzzlebox.cli import app, run_quiz
 from puzzlebox.config import AppConfig, ConfigurationError
 from puzzlebox.questions import QuestionLoadingError
+from puzzlebox.repositories import JsonQuestionRepository
 
 runner = CliRunner()
 
@@ -265,3 +266,25 @@ def test_cli_reports_invalid_configured_questions_file(
 
     assert result.exit_code == 1
     assert "Error: Invalid JSON in questions file" in result.stderr
+
+
+def test_run_quiz_does_not_hide_unexpected_errors(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Test that unexpected errors are not hidden by the CLI."""
+    questions_file = tmp_path / "questions.json"
+    questions_file.write_text("{}", encoding="utf-8")
+
+    def raise_unexpected_error(
+        repository: JsonQuestionRepository,
+    ) -> tuple:
+        raise RuntimeError("Unexpected application error.")
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.JsonQuestionRepository.get_questions",
+        raise_unexpected_error,
+    )
+
+    with pytest.raises(RuntimeError, match="Unexpected application error"):
+        run_quiz(questions_file)
