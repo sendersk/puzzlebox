@@ -246,3 +246,22 @@ def test_run_quiz_reports_question_loading_error(
 
     assert result.exit_code == 1
     assert "Error: Invalid question data." in result.stderr
+
+
+def test_cli_reports_invalid_configured_questions_file(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Test that an invalid configured questions file is reported."""
+    questions_file = tmp_path / "questions.json"
+    questions_file.write_text("{ invalid json", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda path: AppConfig(questions_path=questions_file),
+    )
+
+    result = runner.invoke(app)
+
+    assert result.exit_code == 1
+    assert "Error: Invalid JSON in questions file" in result.stderr
