@@ -175,3 +175,54 @@ def test_load_questions_rejects_empty_question_collection(
 
     with pytest.raises(QuestionLoadingError, match="Invalid question data"):
         load_questions(questions_file)
+
+
+def test_load_questions_reports_missing_file(
+    tmp_path: Path,
+) -> None:
+    """Test that a missing questions file has a clear error message."""
+    questions_file = tmp_path / "missing.json"
+
+    with pytest.raises(
+        QuestionLoadingError,
+        match="Unable to read questions file",
+    ):
+        load_questions(questions_file)
+
+
+def test_load_questions_reports_invalid_json(
+    tmp_path: Path,
+) -> None:
+    """Test that invalid JSON has a clear error message."""
+    questions_file = tmp_path / "questions.json"
+    questions_file.write_text(
+        "{ invalid json",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        QuestionLoadingError,
+        match="Invalid JSON in questions file",
+    ):
+        load_questions(questions_file)
+
+
+def test_load_questions_reports_invalid_question_data(
+    tmp_path: Path,
+) -> None:
+    """Test that invalid question data has a clear error message."""
+    questions_file = tmp_path / "questions.json"
+    questions_file.write_text(
+        """
+        {
+            "questions": []
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        QuestionLoadingError,
+        match="Invalid question data",
+    ):
+        load_questions(questions_file)
