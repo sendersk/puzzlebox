@@ -4,7 +4,7 @@ import json
 import logging
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from puzzlebox.models import Difficulty, Question
 
@@ -32,7 +32,7 @@ class QuestionCollection(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    questions: list[QuestionData]
+    questions: list[QuestionData] = Field(min_length=1)
 
 
 def load_questions(path: Path) -> tuple[Question, ...]:
