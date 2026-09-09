@@ -156,3 +156,22 @@ def test_load_questions_logs_loading_information(
 def test_question_loading_error_is_an_exception() -> None:
     """Test that QuestionLoadingError is an exception."""
     assert issubclass(QuestionLoadingError, Exception)
+
+
+def test_load_questions_rejects_empty_question_collection(
+    tmp_path: Path,
+) -> None:
+    """Test that an empty question collection is rejected."""
+    questions_file = tmp_path / "questions.json"
+
+    questions_file.write_text(
+        """
+        {
+            "questions": []
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(QuestionLoadingError, match="Invalid question data"):
+        load_questions(questions_file)
