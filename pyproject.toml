@@ -47,6 +47,7 @@ indent-style = "space"
 [tool.mypy]
 python_version = "3.13"
 strict = true
+warn_unused_configs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
