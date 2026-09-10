@@ -1,7 +1,7 @@
 """Tests for PuzzleBox presentation helpers."""
 
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
-from puzzlebox.presentation import display_question
+from puzzlebox.presentation import display_question, get_answer
 from puzzlebox.runner import QuizRunner
 
 
@@ -25,3 +25,76 @@ def test_display_question(capsys) -> None:
     assert "What is Python?" in captured.out
     assert "1. Programming language" in captured.out
     assert "2. Database" in captured.out
+
+
+def test_get_answer_returns_valid_answer_number(
+    monkeypatch,
+) -> None:
+    """Test that get_answer returns a valid answer number."""
+    question = Question(
+        text="What is Python?",
+        answers=("Programming language", "Database"),
+        correct_answer="Programming language",
+        category="Programming",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    monkeypatch.setattr("builtins.input", lambda _: "2")
+
+    answer = get_answer(runner)
+
+    assert answer == 2
+
+
+def test_get_answer_retries_after_non_numeric_input(
+    monkeypatch,
+    capsys,
+) -> None:
+    """Test that get_answer retries after non-numeric input."""
+    question = Question(
+        text="What is Python?",
+        answers=("Programming language", "Database"),
+        correct_answer="Programming language",
+        category="Programming",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    answers = iter(("abc", "1"))
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    answer = get_answer(runner)
+
+    captured = capsys.readouterr()
+
+    assert answer == 1
+    assert "Please enter a number." in captured.out
+
+
+def test_get_answer_retries_after_invalid_answer_number(
+    monkeypatch,
+    capsys,
+) -> None:
+    """Test that get_answer retries after an out-of-range answer."""
+    question = Question(
+        text="What is Python?",
+        answers=("Programming language", "Database"),
+        correct_answer="Programming language",
+        category="Programming",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    answers = iter(("3", "2"))
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    answer = get_answer(runner)
+
+    captured = capsys.readouterr()
+
+    assert answer == 2
+    assert "Please select one of the available answers." in captured.out
