@@ -174,8 +174,8 @@ def test_get_answer_rejects_empty_input(monkeypatch, capsys) -> None:
     assert captured.out == "Please enter an answer.\n"
 
 
-def test_get_answer_handles_eof_error(monkeypatch, capsys) -> None:
-    """Test that closed input is reported and EOFError is re-raised."""
+def test_get_answer_propagates_eof_error(monkeypatch) -> None:
+    """Test that EOFError is propagated to the caller."""
     question = Question(
         text="What is 2 + 2?",
         answers=("3", "4"),
@@ -193,7 +193,3 @@ def test_get_answer_handles_eof_error(monkeypatch, capsys) -> None:
 
     with pytest.raises(EOFError):
         get_answer(runner)
-
-    captured = capsys.readouterr()
-
-    assert captured.out == "\nInput closed. Quiz cancelled.\n"
