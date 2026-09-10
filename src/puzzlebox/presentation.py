@@ -20,7 +20,11 @@ def display_question(runner: QuizRunner) -> None:
 def get_answer(runner: QuizRunner) -> int:
     """Read an answer number from the user."""
     while True:
-        value = input("Your answer: ")
+        value = input("Your answer: ").strip()
+
+        if not value:
+            print("Please enter an answer.")
+            continue
 
         try:
             answer_number = int(value)
