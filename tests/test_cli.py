@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from puzzlebox.cli import app, run_quiz, create_runner
+from puzzlebox.cli import app, run_quiz, create_runner, answer_question
 from puzzlebox.config import AppConfig, ConfigurationError
+from puzzlebox.models import Quiz, QuizSession, Difficulty, Question
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
@@ -352,3 +353,23 @@ def test_create_runner_creates_quiz_runner(tmp_path) -> None:
     assert isinstance(runner, QuizRunner)
     assert runner.total_questions == 1
     assert runner.current_question.text == "What is 2 + 2?"
+
+
+def test_answer_question_returns_correct_result(monkeypatch) -> None:
+    """Test that answer_question returns the result of the submitted answer."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    monkeypatch.setattr("builtins.input", lambda _: "2")
+
+    result = answer_question(runner)
+
+    assert result is True
+    assert runner.score == 1
