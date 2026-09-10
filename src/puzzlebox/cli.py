@@ -7,7 +7,7 @@ import typer
 
 from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
-from puzzlebox.presentation import display_question, get_answer
+from puzzlebox.presentation import display_answer_result, display_question, get_answer
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
@@ -77,10 +77,7 @@ def process_question(runner: QuizRunner) -> None:
 
     is_correct = runner.answer(answer)
 
-    if is_correct:
-        print("Correct!")
-    else:
-        print("Wrong!")
+    display_answer_result(is_correct)
 
     if not runner.is_finished:
         runner.next_question()

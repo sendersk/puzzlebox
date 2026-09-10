@@ -32,3 +32,11 @@ def get_answer(runner: QuizRunner) -> int:
             return answer_number
 
         print("Please select one of the available answers.")
+
+
+def display_answer_result(is_correct: bool) -> None:
+    """Display the result of the user's answer."""
+    if is_correct:
+        print("Correct!")
+    else:
+        print("Wrong!")
