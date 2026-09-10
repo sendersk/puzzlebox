@@ -424,3 +424,35 @@ def test_move_to_next_question_does_not_advance_finished_quiz() -> None:
 
     assert runner.is_finished is True
     assert runner.current_question.text == "Question"
+
+
+def test_run_quiz_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path) -> None:
+    """Test that Ctrl+C cancels the quiz gracefully."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_runner",
+        lambda _: runner,
+    )
+
+    def interrupt(_runner: QuizRunner) -> None:
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.process_question",
+        interrupt,
+    )
+
+    run_quiz(tmp_path / "questions.json")
+
+    captured = capsys.readouterr()
+
+    assert captured.out == ("PuzzleBox\n=========\n\nQuiz cancelled.\n")
