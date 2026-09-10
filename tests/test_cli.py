@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from puzzlebox.cli import app, run_quiz, create_runner, answer_question
+from puzzlebox.cli import app, run_quiz, create_runner, answer_question, move_to_next_question
 from puzzlebox.config import AppConfig, ConfigurationError
 from puzzlebox.models import Quiz, QuizSession, Difficulty, Question
 from puzzlebox.questions import QuestionLoadingError
@@ -373,3 +373,48 @@ def test_answer_question_returns_correct_result(monkeypatch) -> None:
 
     assert result is True
     assert runner.score == 1
+
+
+def test_move_to_next_question_advances_runner() -> None:
+    """Test that move_to_next_question advances an unfinished quiz."""
+    questions = (
+        Question(
+            text="Question 1",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Question 2",
+            answers=("C", "D"),
+            correct_answer="C",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+    quiz = Quiz(questions=questions)
+    runner = QuizRunner(QuizSession(quiz))
+
+    move_to_next_question(runner)
+
+    assert runner.current_question.text == "Question 2"
+
+
+def test_move_to_next_question_does_not_advance_finished_quiz() -> None:
+    """Test that move_to_next_question does nothing after the quiz is finished."""
+    question = Question(
+        text="Question",
+        answers=("A", "B"),
+        correct_answer="A",
+        category="Test",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    runner.answer("A")
+    move_to_next_question(runner)
+
+    assert runner.is_finished is True
+    assert runner.current_question.text == "Question"
