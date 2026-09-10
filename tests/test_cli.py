@@ -5,10 +5,11 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from puzzlebox.cli import app, run_quiz
+from puzzlebox.cli import app, run_quiz, create_runner
 from puzzlebox.config import AppConfig, ConfigurationError
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.repositories import JsonQuestionRepository
+from puzzlebox.runner import QuizRunner
 
 runner = CliRunner()
 
@@ -324,3 +325,30 @@ def test_run_quiz_displays_final_score(
     assert "Quiz finished!" in captured.out
     assert "Score: 1/1" in captured.out
     assert "Percentage: 100.0%" in captured.out
+
+
+def test_create_runner_creates_quiz_runner(tmp_path) -> None:
+    """Test that create_runner creates a runner from a questions file."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        """
+        {
+            "questions": [
+                {
+                    "text": "What is 2 + 2?",
+                    "answers": ["3", "4"],
+                    "correct_answer": "4",
+                    "category": "Math",
+                    "difficulty": "easy"
+                }
+            ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    runner = create_runner(questions_path)
+
+    assert isinstance(runner, QuizRunner)
+    assert runner.total_questions == 1
+    assert runner.current_question.text == "What is 2 + 2?"
