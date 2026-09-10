@@ -147,3 +147,26 @@ def test_display_quiz_result_shows_final_score(capsys) -> None:
     captured = capsys.readouterr()
 
     assert captured.out == ("Quiz finished!\nScore: 1/1\nPercentage: 100.0%\n")
+
+
+def test_get_answer_rejects_empty_input(monkeypatch, capsys) -> None:
+    """Test that empty input is rejected before accepting a valid answer."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    answers = iter(["", "2"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    result = get_answer(runner)
+
+    captured = capsys.readouterr()
+
+    assert result == 2
+    assert captured.out == "Please enter an answer.\n"
