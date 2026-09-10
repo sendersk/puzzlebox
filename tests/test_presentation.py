@@ -1,7 +1,12 @@
 """Tests for PuzzleBox presentation helpers."""
 
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
-from puzzlebox.presentation import display_answer_result, display_question, display_quiz_result, get_answer
+from puzzlebox.presentation import (
+    display_answer_result,
+    display_question,
+    display_quiz_result,
+    get_answer,
+)
 from puzzlebox.runner import QuizRunner
 
 
@@ -141,8 +146,4 @@ def test_display_quiz_result_shows_final_score(capsys) -> None:
 
     captured = capsys.readouterr()
 
-    assert captured.out == (
-        "Quiz finished!\n"
-        "Score: 1/1\n"
-        "Percentage: 100.0%\n"
-    )
+    assert captured.out == ("Quiz finished!\nScore: 1/1\nPercentage: 100.0%\n")

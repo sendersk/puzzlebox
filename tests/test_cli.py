@@ -5,9 +5,15 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from puzzlebox.cli import app, run_quiz, create_runner, answer_question, move_to_next_question
+from puzzlebox.cli import (
+    answer_question,
+    app,
+    create_runner,
+    move_to_next_question,
+    run_quiz,
+)
 from puzzlebox.config import AppConfig, ConfigurationError
-from puzzlebox.models import Quiz, QuizSession, Difficulty, Question
+from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
