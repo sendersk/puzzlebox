@@ -1,7 +1,7 @@
 """Tests for PuzzleBox presentation helpers."""
 
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
-from puzzlebox.presentation import display_question, get_answer
+from puzzlebox.presentation import display_answer_result, display_question, get_answer
 from puzzlebox.runner import QuizRunner
 
 
@@ -98,3 +98,25 @@ def test_get_answer_retries_after_invalid_answer_number(
 
     assert answer == 2
     assert "Please select one of the available answers." in captured.out
+
+
+def test_display_answer_result_shows_correct_message(
+    capsys,
+) -> None:
+    """Test that a correct answer displays the correct message."""
+    display_answer_result(True)
+
+    captured = capsys.readouterr()
+
+    assert captured.out == "Correct!\n"
+
+
+def test_display_answer_result_shows_wrong_message(
+    capsys,
+) -> None:
+    """Test that an incorrect answer displays the wrong message."""
+    display_answer_result(False)
+
+    captured = capsys.readouterr()
+
+    assert captured.out == "Wrong!\n"
