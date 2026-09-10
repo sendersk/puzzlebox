@@ -9,6 +9,7 @@ from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.quiz import create_quiz
+from puzzlebox.presentation import display_question
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
 
@@ -65,20 +66,6 @@ def run_quiz(questions_path: Path) -> None:
     print("Quiz finished!")
     print(f"Score: {runner.score}/{runner.current_question.total}")
     print(f"Percentage: {runner.percentage:.1f}%")
-
-
-def display_question(runner: QuizRunner) -> None:
-    """Display the current question."""
-    question = runner.current_question
-
-    print()
-    print(f"Question {question.number}/{question.total}")
-    print()
-    print(question.text)
-    print()
-
-    for number, answer in enumerate(question.answers, start=1):
-        print(f"{number}. {answer}")
 
 
 def get_answer(question: QuizRunner) -> int:
