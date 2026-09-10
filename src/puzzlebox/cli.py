@@ -61,8 +61,12 @@ def run_quiz(questions_path: Path) -> None:
     print("PuzzleBox")
     print("=========")
 
-    while not runner.is_finished:
-        process_question(runner)
+    try:
+        while not runner.is_finished:
+            process_question(runner)
+    except KeyboardInterrupt:
+        typer.echo("\nQuiz cancelled.")
+        return
 
     display_quiz_result(runner)
 
