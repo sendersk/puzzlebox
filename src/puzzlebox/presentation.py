@@ -20,11 +20,7 @@ def display_question(runner: QuizRunner) -> None:
 def get_answer(runner: QuizRunner) -> int:
     """Read an answer number from the user."""
     while True:
-        try:
-            value = input("Your answer: ").strip()
-        except EOFError:
-            print("\nInput closed. Quiz cancelled.")
-            raise
+        value = input("Your answer: ").strip()
 
         if not value:
             print("Please enter an answer.")
