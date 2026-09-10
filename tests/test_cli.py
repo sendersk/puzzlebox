@@ -288,3 +288,39 @@ def test_run_quiz_does_not_hide_unexpected_errors(
 
     with pytest.raises(RuntimeError, match="Unexpected application error"):
         run_quiz(questions_file)
+
+
+def test_run_quiz_displays_final_score(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Test that the CLI displays the final quiz score."""
+    questions_file = tmp_path / "questions.json"
+
+    questions_file.write_text(
+        """
+        {
+            "questions": [
+                {
+                    "text": "What is 2 + 2?",
+                    "answers": ["3", "4"],
+                    "correct_answer": "4",
+                    "category": "Math",
+                    "difficulty": "easy"
+                }
+            ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr("builtins.input", lambda _: "2")
+
+    run_quiz(questions_file)
+
+    captured = capsys.readouterr()
+
+    assert "Quiz finished!" in captured.out
+    assert "Score: 1/1" in captured.out
+    assert "Percentage: 100.0%" in captured.out
