@@ -226,3 +226,32 @@ def test_load_questions_reports_invalid_question_data(
         match="Invalid question data",
     ):
         load_questions(questions_file)
+
+
+def test_load_questions_raises_loading_error_for_invalid_domain_data(
+    tmp_path,
+) -> None:
+    """Test that invalid domain data is wrapped in QuestionLoadingError."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        """
+        {
+            "questions": [
+                {
+                    "text": "What is 2 + 2?",
+                    "answers": ["3", "4"],
+                    "correct_answer": "5",
+                    "category": "Math",
+                    "difficulty": "easy"
+                }
+            ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        QuestionLoadingError,
+        match="Invalid question data",
+    ):
+        load_questions(questions_path)
