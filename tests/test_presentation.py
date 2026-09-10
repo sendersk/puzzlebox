@@ -1,7 +1,7 @@
 """Tests for PuzzleBox presentation helpers."""
 
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
-from puzzlebox.presentation import display_answer_result, display_question, get_answer
+from puzzlebox.presentation import display_answer_result, display_question, display_quiz_result, get_answer
 from puzzlebox.runner import QuizRunner
 
 
@@ -120,3 +120,29 @@ def test_display_answer_result_shows_wrong_message(
     captured = capsys.readouterr()
 
     assert captured.out == "Wrong!\n"
+
+
+def test_display_quiz_result_shows_final_score(capsys) -> None:
+    """Test that the final quiz result is displayed."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    session = QuizSession(quiz)
+    runner = QuizRunner(session)
+
+    runner.answer("4")
+
+    display_quiz_result(runner)
+
+    captured = capsys.readouterr()
+
+    assert captured.out == (
+        "Quiz finished!\n"
+        "Score: 1/1\n"
+        "Percentage: 100.0%\n"
+    )
