@@ -1,5 +1,7 @@
 """Tests for PuzzleBox presentation helpers."""
 
+import pytest
+
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
 from puzzlebox.presentation import (
     display_answer_result,
@@ -170,3 +172,28 @@ def test_get_answer_rejects_empty_input(monkeypatch, capsys) -> None:
 
     assert result == 2
     assert captured.out == "Please enter an answer.\n"
+
+
+def test_get_answer_handles_eof_error(monkeypatch, capsys) -> None:
+    """Test that closed input is reported and EOFError is re-raised."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    def raise_eof(_prompt: str) -> str:
+        raise EOFError
+
+    monkeypatch.setattr("builtins.input", raise_eof)
+
+    with pytest.raises(EOFError):
+        get_answer(runner)
+
+    captured = capsys.readouterr()
+
+    assert captured.out == "\nInput closed. Quiz cancelled.\n"
