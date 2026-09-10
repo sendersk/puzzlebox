@@ -456,3 +456,35 @@ def test_run_quiz_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path) -> N
     captured = capsys.readouterr()
 
     assert captured.out == ("PuzzleBox\n=========\n\nQuiz cancelled.\n")
+
+
+def test_run_quiz_handles_eof_error(monkeypatch, capsys, tmp_path) -> None:
+    """Test that closed input cancels the quiz without an error."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_runner",
+        lambda _: runner,
+    )
+
+    def raise_eof(_runner: QuizRunner) -> bool:
+        raise EOFError
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.process_question",
+        raise_eof,
+    )
+
+    run_quiz(tmp_path / "questions.json")
+
+    captured = capsys.readouterr()
+
+    assert captured.out == ("PuzzleBox\n=========\n\nQuiz cancelled.\n")
