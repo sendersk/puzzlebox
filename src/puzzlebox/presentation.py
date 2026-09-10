@@ -40,3 +40,10 @@ def display_answer_result(is_correct: bool) -> None:
         print("Correct!")
     else:
         print("Wrong!")
+
+
+def display_quiz_result(runner: QuizRunner) -> None:
+    """Display the final quiz result."""
+    print("Quiz finished!")
+    print(f"Score: {runner.score}/{runner.current_question.total}")
+    print(f"Percentage: {runner.percentage:.1f}%")
