@@ -68,9 +68,7 @@ def process_question(runner: QuizRunner) -> None:
     is_correct = answer_question(runner)
 
     display_answer_result(is_correct)
-
-    if not runner.is_finished:
-        runner.next_question()
+    move_to_next_question(runner)
 
 
 def create_runner(questions_path: Path) -> QuizRunner:
@@ -87,3 +85,9 @@ def answer_question(runner: QuizRunner) -> bool:
     answer = runner.current_question.answers[answer_number - 1]
 
     return runner.answer(answer)
+
+
+def move_to_next_question(runner: QuizRunner) -> None:
+    """Move to the next question when the quiz is not finished."""
+    if not runner.is_finished:
+        runner.next_question()
