@@ -50,4 +50,13 @@ strict = true
 warn_unused_configs = true
 
 [tool.pytest.ini_options]
+addopts = "--strict-markers"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["puzzlebox"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
