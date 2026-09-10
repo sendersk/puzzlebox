@@ -7,9 +7,9 @@ import typer
 
 from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
+from puzzlebox.presentation import display_question, get_answer
 from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.quiz import create_quiz
-from puzzlebox.presentation import display_question
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
 
@@ -66,23 +66,6 @@ def run_quiz(questions_path: Path) -> None:
     print("Quiz finished!")
     print(f"Score: {runner.score}/{runner.current_question.total}")
     print(f"Percentage: {runner.percentage:.1f}%")
-
-
-def get_answer(question: QuizRunner) -> int:
-    """Read an answer number from the user."""
-    while True:
-        value = input("Your answer: ")
-
-        try:
-            answer_number = int(value)
-        except ValueError:
-            print("Please enter a number.")
-            continue
-
-        if 1 <= answer_number <= len(question.current_question.answers):
-            return answer_number
-
-        print("Please select one of the available answers.")
 
 
 def process_question(runner: QuizRunner) -> None:
