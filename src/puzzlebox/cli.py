@@ -65,10 +65,7 @@ def process_question(runner: QuizRunner) -> None:
     """Process the current question."""
     display_question(runner)
 
-    answer_number = get_answer(runner)
-    answer = runner.current_question.answers[answer_number - 1]
-
-    is_correct = runner.answer(answer)
+    is_correct = answer_question(runner)
 
     display_answer_result(is_correct)
 
@@ -82,3 +79,11 @@ def create_runner(questions_path: Path) -> QuizRunner:
     quiz = create_quiz(repository)
 
     return QuizRunner(QuizSession(quiz))
+
+
+def answer_question(runner: QuizRunner) -> bool:
+    """Answer the current question and return whether the answer is correct."""
+    answer_number = get_answer(runner)
+    answer = runner.current_question.answers[answer_number - 1]
+
+    return runner.answer(answer)
