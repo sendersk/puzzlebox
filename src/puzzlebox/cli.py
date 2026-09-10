@@ -64,7 +64,7 @@ def run_quiz(questions_path: Path) -> None:
     try:
         while not runner.is_finished:
             process_question(runner)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         typer.echo("\nQuiz cancelled.")
         return
 
