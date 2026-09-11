@@ -501,3 +501,33 @@ def test_cli_version() -> None:
 
     assert result.exit_code == 0
     assert result.stdout == f"PuzzleBox {version('puzzlebox')}\n"
+
+
+def test_cli_version_does_not_load_config(monkeypatch) -> None:
+    """Test that the version option skips normal application startup."""
+    runner = typer.testing.CliRunner()
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("load_config should not be called")
+
+    monkeypatch.setattr("puzzlebox.cli.load_config", fail_if_called)
+
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.startswith("PuzzleBox ")
+
+
+def test_cli_version_does_not_run_quiz(monkeypatch) -> None:
+    """Test that the version option does not start the quiz."""
+    runner = typer.testing.CliRunner()
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("run_quiz should not be called")
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fail_if_called)
+
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.startswith("PuzzleBox ")
