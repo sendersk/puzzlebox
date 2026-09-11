@@ -5,6 +5,8 @@ from typing import Annotated
 
 import typer
 
+from importlib.metadata import version
+
 from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession
 from puzzlebox.presentation import (
@@ -17,6 +19,12 @@ from puzzlebox.questions import QuestionLoadingError
 from puzzlebox.quiz import create_quiz
 from puzzlebox.repositories import JsonQuestionRepository
 from puzzlebox.runner import QuizRunner
+
+
+def get_version() -> str:
+    """Return the installed PuzzleBox version."""
+    return version("puzzlebox")
+
 
 app = typer.Typer(
     add_completion=False,
@@ -37,8 +45,17 @@ def cli(
             readable=True,
         ),
     ] = None,
+    version: bool = typer.Option(
+        False,
+        "--version",
+        help="Show the PuzzleBox version and exit.",
+    ),
 ) -> None:
     """Start the PuzzleBox quiz."""
+    if version:
+        typer.echo(f"PuzzleBox {get_version()}")
+        raise typer.Exit()
+
     try:
         config = load_config(Path("config/settings.yaml"))
     except ConfigurationError as exc:
