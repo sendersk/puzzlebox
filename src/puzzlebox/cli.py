@@ -1,11 +1,10 @@
 """Command-line interface for PuzzleBox."""
 
+from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated
 
 import typer
-
-from importlib.metadata import version
 
 from puzzlebox.config import ConfigurationError, load_config
 from puzzlebox.models import QuizSession

@@ -1,11 +1,10 @@
 """Tests for the command-line interface."""
 
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
 import typer
-
-from importlib.metadata import version
 from typer.testing import CliRunner
 
 from puzzlebox.cli import (
