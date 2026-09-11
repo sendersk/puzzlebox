@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+import typer
 from typer.testing import CliRunner
 
 from puzzlebox.cli import (
@@ -488,3 +489,13 @@ def test_run_quiz_handles_eof_error(monkeypatch, capsys, tmp_path) -> None:
     captured = capsys.readouterr()
 
     assert captured.out == ("PuzzleBox\n=========\n\nQuiz cancelled.\n")
+
+
+def test_cli_version(capsys) -> None:
+    """Test that the CLI displays the application version."""
+    runner = typer.testing.CliRunner()
+
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "PuzzleBox 0.1.0\n"
