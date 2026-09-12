@@ -121,13 +121,3 @@ class QuizSession:
             return
 
         self.current_index += 1
-
-
-@dataclass(frozen=True, slots=True)
-class QuestionView:
-    """Represent question data prepared for presentation."""
-
-    number: int
-    total: int
-    text: str
-    answers: tuple[str, ...]

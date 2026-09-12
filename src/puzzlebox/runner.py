@@ -1,10 +1,21 @@
 """Quiz execution logic."""
 
 import logging
+from dataclasses import dataclass
 
-from puzzlebox.models import QuestionView, QuizSession
+from puzzlebox.models import QuizSession
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class QuestionView:
+    """Represent question data prepared for presentation."""
+
+    number: int
+    total: int
+    text: str
+    answers: tuple[str, ...]
 
 
 class QuizRunner:
