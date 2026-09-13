@@ -337,3 +337,33 @@ def test_quiz_session_does_not_advance_after_completion() -> None:
 
     assert session.current_index == 0
     assert session.is_finished is True
+
+
+def test_quiz_session_rejects_answering_current_question_twice() -> None:
+    """Test that the current question cannot be answered twice."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is 3 + 3?",
+            answers=("5", "6"),
+            correct_answer="6",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+    quiz = Quiz(questions=questions)
+    session = QuizSession(quiz)
+
+    assert session.answer_current_question("4") is True
+
+    with pytest.raises(
+        RuntimeError,
+        match="The current question has already been answered.",
+    ):
+        session.answer_current_question("3")
