@@ -125,8 +125,5 @@ class QuizSession:
         if self.is_finished:
             return
 
-        if not self.answered:
-            raise RuntimeError("The current question has not been answered.")
-
         self.current_index += 1
         self.answered = False
