@@ -73,6 +73,7 @@ class QuizSession:
     current_index: int = 0
     score: int = 0
     answered_count: int = 0
+    answered: bool = False
     finished: bool = False
 
     @property
@@ -103,12 +104,16 @@ class QuizSession:
         if self.is_finished:
             raise RuntimeError("The quiz session has already finished.")
 
+        if self.answered:
+            raise RuntimeError("The current question has already been answered.")
+
         is_correct = answer == self.current_question.correct_answer
 
         if is_correct:
             self.score += 1
 
         self.answered_count += 1
+        self.answered = True
 
         if self.answered_count == self.total_questions:
             self.finished = True
@@ -120,4 +125,8 @@ class QuizSession:
         if self.is_finished:
             return
 
+        if not self.answered:
+            raise RuntimeError("The current question has not been answered.")
+
         self.current_index += 1
+        self.answered = False
