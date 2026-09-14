@@ -89,3 +89,41 @@ def test_load_config_rejects_invalid_yaml(tmp_path: Path) -> None:
 
     with pytest.raises(ConfigurationError, match="Invalid YAML"):
         load_config(config_path)
+
+
+def test_app_config_shuffle_questions_defaults_to_false() -> None:
+    """Test that question shuffling is disabled by default."""
+    config = AppConfig()
+
+    assert config.shuffle_questions is False
+
+
+def test_load_config_reads_shuffle_questions(tmp_path: Path) -> None:
+    """Test that question shuffling is loaded from YAML configuration."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        """
+questions_path: resources/questions.json
+shuffle_questions: true
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.shuffle_questions is True
+
+
+def test_load_config_defaults_shuffle_questions_when_missing(
+    tmp_path: Path,
+) -> None:
+    """Test that missing shuffle configuration uses the default value."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        "questions_path: resources/questions.json",
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.shuffle_questions is False
