@@ -6,9 +6,16 @@ from puzzlebox.models import Question, Quiz
 from puzzlebox.repositories import QuestionRepository
 
 
-def create_quiz(repository: QuestionRepository) -> Quiz:
-    """Create a quiz from questions provided by a repository."""
+def create_quiz(
+    repository: QuestionRepository,
+    *,
+    shuffle: bool = False,
+) -> Quiz:
+    """Create a quiz from repository questions."""
     questions = repository.get_questions()
+
+    if shuffle:
+        questions = shuffle_questions(questions)
 
     return Quiz(questions=questions)
 
