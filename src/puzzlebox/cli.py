@@ -62,14 +62,23 @@ def cli(
         raise typer.Exit(code=1) from exc
 
     questions_path = questions or config.questions_path
+    run_quiz(
+        questions_path,
+        shuffle_questions=config.shuffle_questions,
+    )
 
-    run_quiz(questions_path)
 
-
-def run_quiz(questions_path: Path) -> None:
-    """Run a quiz using questions from the given JSON file."""
+def run_quiz(
+    questions_path: Path,
+    *,
+    shuffle_questions: bool = False,
+) -> None:
+    """Run a quiz using the given question configuration."""
     try:
-        runner = create_runner(questions_path)
+        runner = create_runner(
+            questions_path,
+            shuffle_questions=shuffle_questions,
+        )
     except QuestionLoadingError as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -97,11 +106,14 @@ def process_question(runner: QuizRunner) -> None:
     move_to_next_question(runner)
 
 
-def create_runner(questions_path: Path) -> QuizRunner:
-    """Create a quiz runner using questions from the given JSON file."""
+def create_runner(
+    questions_path: Path,
+    *,
+    shuffle_questions: bool = False,
+) -> QuizRunner:
+    """Create a quiz runner using the given question configuration."""
     repository = JsonQuestionRepository(questions_path)
-    quiz = create_quiz(repository)
-
+    quiz = create_quiz(repository, shuffle=shuffle_questions)
     return QuizRunner(QuizSession(quiz))
 
 
