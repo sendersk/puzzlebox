@@ -3,7 +3,7 @@
 import pytest
 
 from puzzlebox.models import Difficulty, Question
-from puzzlebox.quiz import create_quiz
+from puzzlebox.quiz import create_quiz, shuffle_questions
 
 
 class FakeQuestionRepository:
@@ -54,3 +54,62 @@ def test_create_quiz_rejects_empty_repository() -> None:
         match="A quiz must contain at least one question",
     ):
         create_quiz(repository)
+
+
+def test_shuffle_questions_returns_same_questions_in_random_order() -> None:
+    """Test that shuffling preserves all questions."""
+    questions = (
+        Question(
+            text="Question 1",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Question 2",
+            answers=("C", "D"),
+            correct_answer="C",
+            category="Test",
+            difficulty=Difficulty.MEDIUM,
+        ),
+        Question(
+            text="Question 3",
+            answers=("E", "F"),
+            correct_answer="E",
+            category="Test",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    shuffled = shuffle_questions(questions)
+
+    assert isinstance(shuffled, tuple)
+    assert len(shuffled) == len(questions)
+    assert set(shuffled) == set(questions)
+
+
+def test_shuffle_questions_does_not_modify_original_questions() -> None:
+    """Test that shuffling does not modify the original questions."""
+    questions = (
+        Question(
+            text="Question 1",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Question 2",
+            answers=("C", "D"),
+            correct_answer="C",
+            category="Test",
+            difficulty=Difficulty.MEDIUM,
+        ),
+    )
+
+    original_questions = questions
+
+    shuffle_questions(questions)
+
+    assert questions == original_questions
