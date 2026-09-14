@@ -16,6 +16,7 @@ class AppConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     questions_path: Path = Path("resources/questions.json")
+    shuffle_questions: bool = False
 
 
 def load_config(path: Path) -> AppConfig:
