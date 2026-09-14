@@ -367,3 +367,38 @@ def test_quiz_session_rejects_answering_current_question_twice() -> None:
         match="The current question has already been answered.",
     ):
         session.answer_current_question("3")
+
+
+def test_quiz_session_resets_answered_state_when_moving_to_next_question() -> None:
+    """Test that moving to the next question resets the answered state."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is 3 + 3?",
+            answers=("5", "6"),
+            correct_answer="6",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+    quiz = Quiz(questions=questions)
+    session = QuizSession(quiz)
+
+    assert session.answered is False
+
+    session.answer_current_question("4")
+
+    assert session.answered is True
+    assert session.current_index == 0
+
+    session.next_question()
+
+    assert session.current_index == 1
+    assert session.answered is False
+    assert session.current_question == questions[1]
