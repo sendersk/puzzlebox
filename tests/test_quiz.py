@@ -113,3 +113,71 @@ def test_shuffle_questions_does_not_modify_original_questions() -> None:
     shuffle_questions(questions)
 
     assert questions == original_questions
+
+
+def test_create_quiz_does_not_shuffle_questions_by_default() -> None:
+    """Test that quiz creation preserves question order by default."""
+    questions = (
+        Question(
+            text="Question 1",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Question 2",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Test",
+            difficulty=Difficulty.MEDIUM,
+        ),
+    )
+
+    repository = FakeQuestionRepository(questions)
+
+    quiz = create_quiz(repository)
+
+    assert quiz.questions == questions
+
+
+def test_create_quiz_shuffles_questions_when_requested(
+    monkeypatch,
+) -> None:
+    """Test that quiz creation shuffles questions when requested."""
+    questions = (
+        Question(
+            text="Question 1",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Question 2",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Test",
+            difficulty=Difficulty.MEDIUM,
+        ),
+        Question(
+            text="Question 3",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Test",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    repository = FakeQuestionRepository(questions)
+
+    def fake_shuffle(
+        questions_to_shuffle: tuple[Question, ...],
+    ) -> tuple[Question, ...]:
+        return tuple(reversed(questions_to_shuffle))
+
+    monkeypatch.setattr("puzzlebox.quiz.shuffle_questions", fake_shuffle)
+
+    quiz = create_quiz(repository, shuffle=True)
+
+    assert quiz.questions == tuple(reversed(questions))
