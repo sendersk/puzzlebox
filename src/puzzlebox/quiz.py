@@ -1,6 +1,8 @@
 """Application services for quiz creation."""
 
-from puzzlebox.models import Quiz
+import random
+
+from puzzlebox.models import Question, Quiz
 from puzzlebox.repositories import QuestionRepository
 
 
@@ -9,3 +11,12 @@ def create_quiz(repository: QuestionRepository) -> Quiz:
     questions = repository.get_questions()
 
     return Quiz(questions=questions)
+
+
+def shuffle_questions(
+    questions: tuple[Question, ...],
+) -> tuple[Question, ...]:
+    """Return questions in a randomized order."""
+    shuffled = list(questions)
+    random.shuffle(shuffled)
+    return tuple(shuffled)
