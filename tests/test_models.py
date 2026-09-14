@@ -402,3 +402,43 @@ def test_quiz_session_resets_answered_state_when_moving_to_next_question() -> No
     assert session.current_index == 1
     assert session.answered is False
     assert session.current_question == questions[1]
+
+
+def test_quiz_session_finishes_after_answering_last_question() -> None:
+    """Test that the session is finished after the last question is answered."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is 3 + 3?",
+            answers=("5", "6"),
+            correct_answer="6",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+    quiz = Quiz(questions=questions)
+    session = QuizSession(quiz)
+
+    session.answer_current_question("4")
+    session.next_question()
+
+    assert session.current_index == 1
+    assert session.is_finished is False
+
+    assert session.answer_current_question("6") is True
+
+    assert session.answered is True
+    assert session.answered_count == 2
+    assert session.score == 2
+    assert session.is_finished is True
+    assert session.percentage == 100.0
+
+    session.next_question()
+
+    assert session.current_index == 1
