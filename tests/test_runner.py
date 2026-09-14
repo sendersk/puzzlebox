@@ -2,6 +2,8 @@
 
 import logging
 
+import pytest
+
 from puzzlebox.models import Difficulty, Question, Quiz, QuizSession
 from puzzlebox.runner import QuizRunner
 
@@ -135,3 +137,31 @@ def test_answer_logs_quiz_completion(caplog) -> None:
         runner.answer("Language")
 
     assert "Quiz finished: score=1/1 (100.0%)" in caplog.text
+
+
+def test_runner_prevents_answering_current_question_twice() -> None:
+    """Test that the runner prevents answering the current question twice."""
+    question_one = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    question_two = Question(
+        text="What is 3 + 3?",
+        answers=("5", "6"),
+        correct_answer="6",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question_one, question_two))
+    runner = QuizRunner(QuizSession(quiz))
+
+    assert runner.answer("4") is True
+
+    with pytest.raises(
+        RuntimeError,
+        match="The current question has already been answered.",
+    ):
+        runner.answer("3")
