@@ -78,10 +78,15 @@ def test_cli_accepts_questions_option(
     questions_path = tmp_path / "questions.json"
     questions_path.write_text("[]", encoding="utf-8")
 
-    called_with: dict[str, Path] = {}
+    called_with: dict[str, object] = {}
 
-    def fake_run_quiz(path: Path) -> None:
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
         called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
 
     monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
 
@@ -92,6 +97,7 @@ def test_cli_accepts_questions_option(
 
     assert result.exit_code == 0
     assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is False
 
 
 def test_cli_accepts_short_questions_option(
@@ -102,10 +108,15 @@ def test_cli_accepts_short_questions_option(
     questions_path = tmp_path / "questions.json"
     questions_path.write_text("[]", encoding="utf-8")
 
-    called_with: dict[str, Path] = {}
+    called_with: dict[str, object] = {}
 
-    def fake_run_quiz(path: Path) -> None:
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
         called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
 
     monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
 
@@ -116,6 +127,7 @@ def test_cli_accepts_short_questions_option(
 
     assert result.exit_code == 0
     assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is False
 
 
 def test_cli_rejects_missing_questions_file(tmp_path: Path) -> None:
@@ -139,10 +151,15 @@ def test_cli_uses_configured_questions_path(
     questions_path = tmp_path / "questions.json"
     questions_path.write_text("[]", encoding="utf-8")
 
-    called_with: dict[str, Path] = {}
+    called_with: dict[str, object] = {}
 
-    def fake_run_quiz(path: Path) -> None:
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
         called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
 
     monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
     monkeypatch.setattr(
@@ -154,6 +171,7 @@ def test_cli_uses_configured_questions_path(
 
     assert result.exit_code == 0
     assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is False
 
 
 def test_cli_option_overrides_config(
@@ -167,10 +185,15 @@ def test_cli_option_overrides_config(
     configured_path.write_text("[]", encoding="utf-8")
     cli_path.write_text("[]", encoding="utf-8")
 
-    called_with: dict[str, Path] = {}
+    called_with: dict[str, object] = {}
 
-    def fake_run_quiz(path: Path) -> None:
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
         called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
 
     monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
     monkeypatch.setattr(
@@ -185,6 +208,7 @@ def test_cli_option_overrides_config(
 
     assert result.exit_code == 0
     assert called_with["path"] == cli_path
+    assert called_with["shuffle_questions"] is False
 
 
 def test_cli_reports_configuration_error(monkeypatch) -> None:
@@ -442,7 +466,7 @@ def test_run_quiz_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path) -> N
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _: runner,
+        lambda _, shuffle_questions=False: runner,
     )
 
     def interrupt(_runner: QuizRunner) -> None:
@@ -474,7 +498,7 @@ def test_run_quiz_handles_eof_error(monkeypatch, capsys, tmp_path) -> None:
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _: runner,
+        lambda _, shuffle_questions=False: runner,
     )
 
     def raise_eof(_runner: QuizRunner) -> bool:
