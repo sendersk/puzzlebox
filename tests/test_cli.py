@@ -827,3 +827,108 @@ def test_cli_without_shuffle_option_preserves_disabled_configuration(
     assert result.exit_code == 0
     assert called_with["path"] == questions_path
     assert called_with["shuffle_questions"] is False
+
+
+def test_create_runner_passes_category_to_create_quiz(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that create_runner passes category to quiz creation."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        """
+{
+    "questions": [
+        {
+            "text": "Question 1",
+            "answers": ["A", "B"],
+            "correct_answer": "A",
+            "category": "Math",
+            "difficulty": "easy"
+        }
+    ]
+}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    called_with: dict[str, object] = {}
+
+    def fake_create_quiz(
+        repository,
+        *,
+        category: str | None = None,
+        shuffle: bool = False,
+    ) -> Quiz:
+        called_with["repository"] = repository
+        called_with["category"] = category
+        called_with["shuffle"] = shuffle
+
+        return Quiz(
+            questions=(
+                Question(
+                    text="Test question",
+                    answers=("A", "B"),
+                    correct_answer="A",
+                    category="Math",
+                    difficulty=Difficulty.EASY,
+                ),
+            ),
+        )
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_quiz",
+        fake_create_quiz,
+    )
+
+    create_runner(
+        questions_path,
+        category="Math",
+    )
+
+    assert called_with["category"] == "Math"
+
+
+def test_run_quiz_passes_category_to_create_runner(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that run_quiz passes category to runner creation."""
+    called_with: dict[str, object] = {}
+
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+    quiz = Quiz(questions=(question,))
+    runner = QuizRunner(QuizSession(quiz))
+
+    def fake_create_runner(
+        questions_path: Path,
+        *,
+        category: str | None = None,
+        shuffle_questions: bool = False,
+    ) -> QuizRunner:
+        called_with["questions_path"] = questions_path
+        called_with["category"] = category
+        called_with["shuffle_questions"] = shuffle_questions
+        return runner
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_runner",
+        fake_create_runner,
+    )
+    monkeypatch.setattr(
+        "puzzlebox.cli.process_question",
+        lambda _: None,
+    )
+
+    run_quiz(
+        tmp_path / "questions.json",
+        category="Math",
+    )
+
+    assert called_with["category"] == "Math"
