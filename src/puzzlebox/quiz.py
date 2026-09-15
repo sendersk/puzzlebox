@@ -27,3 +27,20 @@ def shuffle_questions(
     shuffled = list(questions)
     random.shuffle(shuffled)
     return tuple(shuffled)
+
+
+def filter_questions_by_category(
+    questions: tuple[Question, ...],
+    category: str | None,
+) -> tuple[Question, ...]:
+    """Return questions matching the given category."""
+    if category is None:
+        return questions
+
+    normalized_category = category.strip().casefold()
+
+    return tuple(
+        question
+        for question in questions
+        if question.category.strip().casefold() == normalized_category
+    )
