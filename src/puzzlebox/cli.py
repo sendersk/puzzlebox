@@ -82,12 +82,14 @@ def cli(
 def run_quiz(
     questions_path: Path,
     *,
+    category: str | None = None,
     shuffle_questions: bool = False,
 ) -> None:
     """Run a quiz using the given question configuration."""
     try:
         runner = create_runner(
             questions_path,
+            category=category,
             shuffle_questions=shuffle_questions,
         )
     except QuestionLoadingError as exc:
@@ -120,11 +122,16 @@ def process_question(runner: QuizRunner) -> None:
 def create_runner(
     questions_path: Path,
     *,
+    category: str | None = None,
     shuffle_questions: bool = False,
 ) -> QuizRunner:
     """Create a quiz runner using the given question configuration."""
     repository = JsonQuestionRepository(questions_path)
-    quiz = create_quiz(repository, shuffle=shuffle_questions)
+    quiz = create_quiz(
+        repository,
+        category=category,
+        shuffle=shuffle_questions,
+    )
     return QuizRunner(QuizSession(quiz))
 
 
