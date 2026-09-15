@@ -9,10 +9,12 @@ from puzzlebox.repositories import QuestionRepository
 def create_quiz(
     repository: QuestionRepository,
     *,
+    category: str | None = None,
     shuffle: bool = False,
 ) -> Quiz:
     """Create a quiz from repository questions."""
     questions = repository.get_questions()
+    questions = filter_questions_by_category(questions, category)
 
     if shuffle:
         questions = shuffle_questions(questions)
