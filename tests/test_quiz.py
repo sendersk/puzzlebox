@@ -3,7 +3,7 @@
 import pytest
 
 from puzzlebox.models import Difficulty, Question
-from puzzlebox.quiz import create_quiz, shuffle_questions
+from puzzlebox.quiz import create_quiz, shuffle_questions, filter_questions_by_category
 
 
 class FakeQuestionRepository:
@@ -181,3 +181,103 @@ def test_create_quiz_shuffles_questions_when_requested(
     quiz = create_quiz(repository, shuffle=True)
 
     assert quiz.questions == tuple(reversed(questions))
+
+
+def test_filter_questions_by_category_returns_matching_questions() -> None:
+    """Test that only questions from the requested category are returned."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is Python?",
+            answers=("Language", "Database"),
+            correct_answer="Language",
+            category="Programming",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is 3 + 3?",
+            answers=("5", "6"),
+            correct_answer="6",
+            category="Math",
+            difficulty=Difficulty.MEDIUM,
+        ),
+    )
+
+    result = filter_questions_by_category(questions, "Math")
+
+    assert result == (questions[0], questions[2])
+
+
+def test_filter_questions_by_category_is_case_insensitive() -> None:
+    """Test that category matching ignores letter case."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+
+    result = filter_questions_by_category((question,), "math")
+
+    assert result == (question,)
+
+
+def test_filter_questions_by_category_ignores_surrounding_whitespace() -> None:
+    """Test that surrounding whitespace is ignored when matching categories."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+
+    result = filter_questions_by_category((question,), "  Math  ")
+
+    assert result == (question,)
+
+
+def test_filter_questions_by_category_returns_all_questions_when_category_is_none() -> None:
+    """Test that no category filter returns the original questions."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is Python?",
+            answers=("Language", "Database"),
+            correct_answer="Language",
+            category="Programming",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+
+    result = filter_questions_by_category(questions, None)
+
+    assert result == questions
+
+
+def test_filter_questions_by_category_returns_empty_tuple_for_unknown_category() -> None:
+    """Test that an unknown category produces no questions."""
+    question = Question(
+        text="What is 2 + 2?",
+        answers=("3", "4"),
+        correct_answer="4",
+        category="Math",
+        difficulty=Difficulty.EASY,
+    )
+
+    result = filter_questions_by_category((question,), "Science")
+
+    assert result == ()
