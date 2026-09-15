@@ -17,6 +17,7 @@ class AppConfig(BaseModel):
 
     questions_path: Path = Path("resources/questions.json")
     shuffle_questions: bool = False
+    category: str | None = None
 
 
 def load_config(path: Path) -> AppConfig:

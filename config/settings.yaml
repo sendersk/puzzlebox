@@ -1,2 +1,3 @@
 questions_path: resources/questions.json
 shuffle_questions: false
+category: null
