@@ -647,3 +647,80 @@ def test_create_runner_passes_shuffle_configuration_to_create_quiz(
 
     assert isinstance(runner, QuizRunner)
     assert called_with["shuffle"] is True
+
+
+def test_run_quiz_uses_shuffled_questions_when_enabled(
+    monkeypatch,
+    capsys,
+    tmp_path: Path,
+) -> None:
+    """Test that run_quiz uses shuffled questions when enabled."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        """
+{
+    "questions": [
+        {
+            "text": "Question 1",
+            "answers": ["A", "B"],
+            "correct_answer": "A",
+            "category": "Test",
+            "difficulty": "easy"
+        },
+        {
+            "text": "Question 2",
+            "answers": ["A", "B"],
+            "correct_answer": "B",
+            "category": "Test",
+            "difficulty": "easy"
+        }
+    ]
+}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    question_one = Question(
+        text="Question 1",
+        answers=("A", "B"),
+        correct_answer="A",
+        category="Test",
+        difficulty=Difficulty.EASY,
+    )
+    question_two = Question(
+        text="Question 2",
+        answers=("A", "B"),
+        correct_answer="B",
+        category="Test",
+        difficulty=Difficulty.EASY,
+    )
+
+    questions = (question_one, question_two)
+
+    def fake_shuffle(
+        questions_to_shuffle: tuple[Question, ...],
+    ) -> tuple[Question, ...]:
+        return tuple(reversed(questions_to_shuffle))
+
+    monkeypatch.setattr(
+        "puzzlebox.quiz.shuffle_questions",
+        fake_shuffle,
+    )
+
+    answers = iter(["2", "1"])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: next(answers),
+    )
+
+    run_quiz(
+        questions_path,
+        shuffle_questions=True,
+    )
+
+    captured = capsys.readouterr()
+
+    assert "Question 1/2" in captured.out
+    assert "Question 2/2" in captured.out
+    assert "Score: 2/2" in captured.out
