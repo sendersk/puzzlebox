@@ -44,6 +44,11 @@ def cli(
             readable=True,
         ),
     ] = None,
+    shuffle: bool | None = typer.Option(
+        None,
+        "--shuffle",
+        help="Shuffle quiz questions before starting.",
+    ),
     version: bool = typer.Option(
         False,
         "--version",
@@ -62,9 +67,15 @@ def cli(
         raise typer.Exit(code=1) from exc
 
     questions_path = questions or config.questions_path
+    shuffle_questions = (
+        config.shuffle_questions
+        if shuffle is None
+        else shuffle
+    )
+
     run_quiz(
         questions_path,
-        shuffle_questions=config.shuffle_questions,
+        shuffle_questions=shuffle_questions,
     )
 
 
