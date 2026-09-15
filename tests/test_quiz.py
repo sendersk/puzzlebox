@@ -2,6 +2,8 @@
 
 import pytest
 
+from unittest.mock import Mock
+
 from puzzlebox.models import Difficulty, Question
 from puzzlebox.quiz import create_quiz, shuffle_questions, filter_questions_by_category
 
@@ -281,3 +283,108 @@ def test_filter_questions_by_category_returns_empty_tuple_for_unknown_category()
     result = filter_questions_by_category((question,), "Science")
 
     assert result == ()
+
+
+def test_create_quiz_filters_questions_by_category() -> None:
+    """Test that create_quiz includes only questions from the requested category."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is Python?",
+            answers=("Language", "Database"),
+            correct_answer="Language",
+            category="Programming",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+
+    repository = Mock()
+    repository.get_questions.return_value = questions
+
+    quiz = create_quiz(repository, category="Math")
+
+    assert quiz.questions == (questions[0],)
+
+
+def test_create_quiz_without_category_includes_all_questions() -> None:
+    """Test that create_quiz includes all questions when no category is given."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is Python?",
+            answers=("Language", "Database"),
+            correct_answer="Language",
+            category="Programming",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+
+    repository = Mock()
+    repository.get_questions.return_value = questions
+
+    quiz = create_quiz(repository)
+
+    assert quiz.questions == questions
+
+
+def test_create_quiz_applies_category_filter_before_shuffle(
+    monkeypatch,
+) -> None:
+    """Test that category filtering happens before question shuffling."""
+    questions = (
+        Question(
+            text="What is 2 + 2?",
+            answers=("3", "4"),
+            correct_answer="4",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is Python?",
+            answers=("Language", "Database"),
+            correct_answer="Language",
+            category="Programming",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="What is 3 + 3?",
+            answers=("5", "6"),
+            correct_answer="6",
+            category="Math",
+            difficulty=Difficulty.MEDIUM,
+        ),
+    )
+
+    repository = Mock()
+    repository.get_questions.return_value = questions
+
+    def fake_shuffle(
+        filtered_questions: tuple[Question, ...],
+    ) -> tuple[Question, ...]:
+        assert filtered_questions == (questions[0], questions[2])
+        return tuple(reversed(filtered_questions))
+
+    monkeypatch.setattr(
+        "puzzlebox.quiz.shuffle_questions",
+        fake_shuffle,
+    )
+
+    quiz = create_quiz(
+        repository,
+        category="Math",
+        shuffle=True,
+    )
+
+    assert quiz.questions == (questions[2], questions[0])
