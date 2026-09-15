@@ -466,7 +466,7 @@ def test_run_quiz_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path) -> N
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _, shuffle_questions=False: runner,
+        lambda _, category=None, shuffle_questions=False: runner,
     )
 
     def interrupt(_runner: QuizRunner) -> None:
@@ -498,7 +498,7 @@ def test_run_quiz_handles_eof_error(monkeypatch, capsys, tmp_path) -> None:
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _, shuffle_questions=False: runner,
+        lambda _, category=None, shuffle_questions=False: runner,
     )
 
     def raise_eof(_runner: QuizRunner) -> bool:
@@ -616,9 +616,10 @@ def test_create_runner_passes_shuffle_configuration_to_create_quiz(
     called_with: dict[str, object] = {}
 
     def fake_create_quiz(
-        repository,
-        *,
-        shuffle: bool = False,
+            repository,
+            *,
+            category: str | None = None,
+            shuffle: bool = False,
     ) -> Quiz:
         called_with["repository"] = repository
         called_with["shuffle"] = shuffle
