@@ -2,6 +2,7 @@
 
 from importlib.metadata import version
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 import typer
@@ -896,15 +897,12 @@ def test_run_quiz_passes_category_to_create_runner(
     """Test that run_quiz passes category to runner creation."""
     called_with: dict[str, object] = {}
 
-    question = Question(
-        text="What is 2 + 2?",
-        answers=("3", "4"),
-        correct_answer="4",
-        category="Math",
-        difficulty=Difficulty.EASY,
-    )
-    quiz = Quiz(questions=(question,))
-    runner = QuizRunner(QuizSession(quiz))
+    runner = Mock(spec=QuizRunner)
+    runner.is_finished = False
+    runner.score = 1
+    runner.percentage = 100.0
+    runner.current_question = Mock()
+    runner.current_question.total = 1
 
     def fake_create_runner(
         questions_path: Path,
@@ -917,13 +915,16 @@ def test_run_quiz_passes_category_to_create_runner(
         called_with["shuffle_questions"] = shuffle_questions
         return runner
 
+    def finish_quiz(_: QuizRunner) -> None:
+        runner.is_finished = True
+
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
         fake_create_runner,
     )
     monkeypatch.setattr(
         "puzzlebox.cli.process_question",
-        lambda _: None,
+        finish_quiz,
     )
 
     run_quiz(
