@@ -724,3 +724,105 @@ def test_run_quiz_uses_shuffled_questions_when_enabled(
     assert "Question 1/2" in captured.out
     assert "Question 2/2" in captured.out
     assert "Score: 2/2" in captured.out
+
+
+def test_cli_uses_configured_shuffle_value_when_option_is_not_provided(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that CLI uses the configured shuffle value by default."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, object] = {}
+
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
+        called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(
+            questions_path=questions_path,
+            shuffle_questions=True,
+        ),
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is True
+
+
+def test_cli_shuffle_option_overrides_disabled_configuration(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that CLI shuffle option overrides disabled configuration."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, object] = {}
+
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
+        called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(
+            questions_path=questions_path,
+            shuffle_questions=False,
+        ),
+    )
+
+    result = runner.invoke(app, ["--shuffle"])
+
+    assert result.exit_code == 0
+    assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is True
+
+
+def test_cli_without_shuffle_option_preserves_disabled_configuration(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that CLI preserves disabled shuffle configuration."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, object] = {}
+
+    def fake_run_quiz(
+        path: Path,
+        *,
+        shuffle_questions: bool = False,
+    ) -> None:
+        called_with["path"] = path
+        called_with["shuffle_questions"] = shuffle_questions
+
+    monkeypatch.setattr("puzzlebox.cli.run_quiz", fake_run_quiz)
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(
+            questions_path=questions_path,
+            shuffle_questions=False,
+        ),
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called_with["path"] == questions_path
+    assert called_with["shuffle_questions"] is False
