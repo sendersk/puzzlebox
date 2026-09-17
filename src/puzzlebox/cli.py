@@ -75,6 +75,7 @@ def cli(
 
     run_quiz(
         questions_path,
+        category=config.category,
         shuffle_questions=shuffle_questions,
     )
 
