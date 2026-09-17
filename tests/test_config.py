@@ -127,3 +127,36 @@ def test_load_config_defaults_shuffle_questions_when_missing(
     config = load_config(config_path)
 
     assert config.shuffle_questions is False
+
+
+def test_load_config_reads_category(tmp_path: Path) -> None:
+    """Test that the category is loaded from configuration."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        """
+questions_path: resources/questions.json
+shuffle_questions: false
+category: Science
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.category == "Science"
+
+
+def test_load_config_defaults_category_to_none(tmp_path: Path) -> None:
+    """Test that category defaults to None when omitted."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        """
+questions_path: resources/questions.json
+shuffle_questions: false
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.category is None
