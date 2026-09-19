@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock
 
 from puzzlebox.models import Difficulty, Question
-from puzzlebox.quiz import create_quiz, shuffle_questions, filter_questions_by_category
+from puzzlebox.quiz import create_quiz, shuffle_questions, filter_questions_by_category, filter_questions_by_difficulty
 
 
 class FakeQuestionRepository:
@@ -388,3 +388,163 @@ def test_create_quiz_applies_category_filter_before_shuffle(
     )
 
     assert quiz.questions == (questions[2], questions[0])
+
+
+def test_filter_questions_by_difficulty() -> None:
+    """Test that only questions with the requested difficulty are returned."""
+    questions = (
+        Question(
+            text="Easy question",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Hard question",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Math",
+            difficulty=Difficulty.HARD,
+        ),
+        Question(
+            text="Another hard question",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Science",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    result = filter_questions_by_difficulty(
+        questions,
+        Difficulty.HARD,
+    )
+
+    assert result == (questions[1], questions[2])
+
+
+def test_filter_questions_by_difficulty_returns_all_when_not_configured() -> None:
+    """Test that no filtering occurs when difficulty is None."""
+    questions = (
+        Question(
+            text="Easy question",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Hard question",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Math",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    result = filter_questions_by_difficulty(questions, None)
+
+    assert result == questions
+
+
+def test_filter_questions_by_difficulty_returns_empty_when_no_match() -> None:
+    """Test that an unmatched difficulty returns no questions."""
+    questions = (
+        Question(
+            text="Easy question",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+    )
+
+    result = filter_questions_by_difficulty(
+        questions,
+        Difficulty.HARD,
+    )
+
+    assert result == ()
+
+
+def test_create_quiz_filters_by_difficulty() -> None:
+    """Test that quiz creation filters questions by difficulty."""
+    questions = (
+        Question(
+            text="Easy question",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Hard question",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Math",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    repository = Mock()
+    repository.get_questions.return_value = questions
+
+    quiz = create_quiz(
+        repository,
+        difficulty=Difficulty.HARD,
+    )
+
+    assert quiz.questions == (questions[1],)
+
+
+def test_create_quiz_filters_by_category_and_difficulty_before_shuffle(
+    monkeypatch,
+) -> None:
+    """Test that filters are applied before questions are shuffled."""
+    questions = (
+        Question(
+            text="Easy math",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Hard math",
+            answers=("A", "B"),
+            correct_answer="B",
+            category="Math",
+            difficulty=Difficulty.HARD,
+        ),
+        Question(
+            text="Hard science",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Science",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    repository = Mock()
+    repository.get_questions.return_value = questions
+
+    def fake_shuffle(
+        filtered_questions: tuple[Question, ...],
+    ) -> tuple[Question, ...]:
+        assert filtered_questions == (questions[1],)
+        return filtered_questions
+
+    monkeypatch.setattr(
+        "puzzlebox.quiz.shuffle_questions",
+        fake_shuffle,
+    )
+
+    quiz = create_quiz(
+        repository,
+        category="Math",
+        difficulty=Difficulty.HARD,
+        shuffle=True,
+    )
+
+    assert quiz.questions == (questions[1],)
