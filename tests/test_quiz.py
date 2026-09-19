@@ -1,11 +1,16 @@
 """Tests for quiz application services."""
 
-import pytest
-
 from unittest.mock import Mock
 
+import pytest
+
 from puzzlebox.models import Difficulty, Question
-from puzzlebox.quiz import create_quiz, shuffle_questions, filter_questions_by_category, filter_questions_by_difficulty
+from puzzlebox.quiz import (
+    create_quiz,
+    filter_questions_by_category,
+    filter_questions_by_difficulty,
+    shuffle_questions,
+)
 
 
 class FakeQuestionRepository:

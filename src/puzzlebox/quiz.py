@@ -2,7 +2,7 @@
 
 import random
 
-from puzzlebox.models import Question, Quiz, Difficulty
+from puzzlebox.models import Difficulty, Question, Quiz
 from puzzlebox.repositories import QuestionRepository
 
 

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError
+
 from puzzlebox.models import Difficulty
 
 
