@@ -7,7 +7,7 @@ from typing import Annotated
 import typer
 
 from puzzlebox.config import ConfigurationError, load_config
-from puzzlebox.models import QuizSession
+from puzzlebox.models import Difficulty, QuizSession
 from puzzlebox.presentation import (
     display_answer_result,
     display_question,
@@ -76,6 +76,7 @@ def cli(
     run_quiz(
         questions_path,
         category=config.category,
+        difficulty=config.difficulty,
         shuffle_questions=shuffle_questions,
     )
 
@@ -84,6 +85,7 @@ def run_quiz(
     questions_path: Path,
     *,
     category: str | None = None,
+    difficulty: Difficulty | None = None,
     shuffle_questions: bool = False,
 ) -> None:
     """Run a quiz using the given question configuration."""
@@ -91,6 +93,7 @@ def run_quiz(
         runner = create_runner(
             questions_path,
             category=category,
+            difficulty=difficulty,
             shuffle_questions=shuffle_questions,
         )
     except QuestionLoadingError as exc:
@@ -124,6 +127,7 @@ def create_runner(
     questions_path: Path,
     *,
     category: str | None = None,
+    difficulty: Difficulty | None = None,
     shuffle_questions: bool = False,
 ) -> QuizRunner:
     """Create a quiz runner using the given question configuration."""
@@ -131,6 +135,7 @@ def create_runner(
     quiz = create_quiz(
         repository,
         category=category,
+        difficulty=difficulty,
         shuffle=shuffle_questions,
     )
     return QuizRunner(QuizSession(quiz))
