@@ -2,7 +2,7 @@
 
 import random
 
-from puzzlebox.models import Question, Quiz
+from puzzlebox.models import Question, Quiz, Difficulty
 from puzzlebox.repositories import QuestionRepository
 
 
@@ -10,11 +10,21 @@ def create_quiz(
     repository: QuestionRepository,
     *,
     category: str | None = None,
+    difficulty: Difficulty | None = None,
     shuffle: bool = False,
 ) -> Quiz:
     """Create a quiz from repository questions."""
     questions = repository.get_questions()
-    questions = filter_questions_by_category(questions, category)
+
+    questions = filter_questions_by_category(
+        questions,
+        category,
+    )
+
+    questions = filter_questions_by_difficulty(
+        questions,
+        difficulty,
+    )
 
     if shuffle:
         questions = shuffle_questions(questions)
@@ -45,4 +55,19 @@ def filter_questions_by_category(
         question
         for question in questions
         if question.category.strip().casefold() == normalized_category
+    )
+
+
+def filter_questions_by_difficulty(
+    questions: tuple[Question, ...],
+    difficulty: Difficulty | None,
+) -> tuple[Question, ...]:
+    """Filter questions by difficulty."""
+    if difficulty is None:
+        return questions
+
+    return tuple(
+        question
+        for question in questions
+        if question.difficulty == difficulty
     )
