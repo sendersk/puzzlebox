@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from puzzlebox.config import AppConfig, ConfigurationError, load_config
+from puzzlebox.models import Difficulty
 
 
 def test_config_uses_default_questions_path() -> None:
@@ -160,3 +161,36 @@ shuffle_questions: false
     config = load_config(config_path)
 
     assert config.category is None
+
+
+def test_load_config_reads_difficulty(tmp_path: Path) -> None:
+    """Test that the difficulty is loaded from configuration."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        """
+questions_path: resources/questions.json
+shuffle_questions: false
+difficulty: hard
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.difficulty == Difficulty.HARD
+
+
+def test_load_config_defaults_difficulty_to_none(tmp_path: Path) -> None:
+    """Test that difficulty defaults to None when omitted."""
+    config_path = tmp_path / "settings.yaml"
+    config_path.write_text(
+        """
+questions_path: resources/questions.json
+shuffle_questions: false
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_path)
+
+    assert config.difficulty is None
