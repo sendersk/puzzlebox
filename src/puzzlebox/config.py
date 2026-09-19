@@ -4,6 +4,7 @@ from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError
+from puzzlebox.models import Difficulty
 
 
 class ConfigurationError(Exception):
@@ -18,6 +19,7 @@ class AppConfig(BaseModel):
     questions_path: Path = Path("resources/questions.json")
     shuffle_questions: bool = False
     category: str | None = None
+    difficulty: Difficulty | None = None
 
 
 def load_config(path: Path) -> AppConfig:
