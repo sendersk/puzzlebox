@@ -978,3 +978,152 @@ def test_cli_passes_configured_category_to_run_quiz(
 
     assert result.exit_code == 0
     assert called_with["category"] == "Science"
+
+
+def test_create_runner_passes_difficulty_to_create_quiz(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that create_runner passes difficulty to quiz creation."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text(
+        """
+{
+    "questions": [
+        {
+            "text": "Question 1",
+            "answers": ["A", "B"],
+            "correct_answer": "A",
+            "category": "Math",
+            "difficulty": "hard"
+        }
+    ]
+}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    called_with: dict[str, object] = {}
+
+    def fake_create_quiz(
+        repository,
+        *,
+        category: str | None = None,
+        difficulty: Difficulty | None = None,
+        shuffle: bool = False,
+    ) -> Quiz:
+        called_with["repository"] = repository
+        called_with["category"] = category
+        called_with["difficulty"] = difficulty
+        called_with["shuffle"] = shuffle
+
+        return Quiz(
+            questions=(
+                Question(
+                    text="Test question",
+                    answers=("A", "B"),
+                    correct_answer="A",
+                    category="Math",
+                    difficulty=Difficulty.HARD,
+                ),
+            ),
+        )
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_quiz",
+        fake_create_quiz,
+    )
+
+    create_runner(
+        questions_path,
+        difficulty=Difficulty.HARD,
+    )
+
+    assert called_with["difficulty"] == Difficulty.HARD
+
+
+def test_run_quiz_passes_difficulty_to_create_runner(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that run_quiz passes difficulty to runner creation."""
+    called_with: dict[str, object] = {}
+
+    runner = Mock(spec=QuizRunner)
+    runner.is_finished = False
+    runner.score = 1
+    runner.percentage = 100.0
+    runner.current_question = Mock()
+    runner.current_question.total = 1
+
+    def fake_create_runner(
+        questions_path: Path,
+        *,
+        category: str | None = None,
+        difficulty: Difficulty | None = None,
+        shuffle_questions: bool = False,
+    ) -> QuizRunner:
+        called_with["questions_path"] = questions_path
+        called_with["category"] = category
+        called_with["difficulty"] = difficulty
+        called_with["shuffle_questions"] = shuffle_questions
+        return runner
+
+    def finish_quiz(_: QuizRunner) -> None:
+        runner.is_finished = True
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.create_runner",
+        fake_create_runner,
+    )
+    monkeypatch.setattr(
+        "puzzlebox.cli.process_question",
+        finish_quiz,
+    )
+
+    run_quiz(
+        tmp_path / "questions.json",
+        difficulty=Difficulty.HARD,
+    )
+
+    assert called_with["difficulty"] == Difficulty.HARD
+
+
+def test_cli_passes_configured_difficulty_to_run_quiz(
+    monkeypatch,
+) -> None:
+    """Test that the configured difficulty is passed to run_quiz."""
+    called_with: dict[str, object] = {}
+
+    def fake_run_quiz(
+        questions_path: Path,
+        *,
+        category: str | None = None,
+        difficulty: Difficulty | None = None,
+        shuffle_questions: bool = False,
+    ) -> None:
+        called_with["questions_path"] = questions_path
+        called_with["category"] = category
+        called_with["difficulty"] = difficulty
+        called_with["shuffle_questions"] = shuffle_questions
+
+    config = AppConfig(
+        questions_path=Path("resources/questions.json"),
+        shuffle_questions=False,
+        category=None,
+        difficulty=Difficulty.HARD,
+    )
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: config,
+    )
+    monkeypatch.setattr(
+        "puzzlebox.cli.run_quiz",
+        fake_run_quiz,
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called_with["difficulty"] == Difficulty.HARD
