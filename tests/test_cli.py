@@ -85,6 +85,7 @@ def test_cli_accepts_questions_option(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -116,6 +117,7 @@ def test_cli_accepts_short_questions_option(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -160,6 +162,7 @@ def test_cli_uses_configured_questions_path(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -195,6 +198,7 @@ def test_cli_option_overrides_config(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -471,7 +475,7 @@ def test_run_quiz_handles_keyboard_interrupt(monkeypatch, capsys, tmp_path) -> N
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _, category=None, shuffle_questions=False: runner,
+        lambda _, category=None, difficulty=None, shuffle_questions=False: runner,
     )
 
     def interrupt(_runner: QuizRunner) -> None:
@@ -503,7 +507,7 @@ def test_run_quiz_handles_eof_error(monkeypatch, capsys, tmp_path) -> None:
 
     monkeypatch.setattr(
         "puzzlebox.cli.create_runner",
-        lambda _, category=None, shuffle_questions=False: runner,
+        lambda _, category=None, difficulty=None, shuffle_questions=False: runner,
     )
 
     def raise_eof(_runner: QuizRunner) -> bool:
@@ -572,10 +576,11 @@ def test_cli_passes_shuffle_configuration_to_run_quiz(
     called_with: dict[str, object] = {}
 
     def fake_run_quiz(
-        path: Path,
-        *,
-        category: str | None = None,
-        shuffle_questions: bool = False,
+            path: Path,
+            *,
+            category: str | None = None,
+            difficulty: Difficulty | None = None,
+            shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
         called_with["shuffle_questions"] = shuffle_questions
@@ -625,6 +630,7 @@ def test_create_runner_passes_shuffle_configuration_to_create_quiz(
             repository,
             *,
             category: str | None = None,
+            difficulty: Difficulty | None = None,
             shuffle: bool = False,
     ) -> Quiz:
         called_with["repository"] = repository
@@ -747,6 +753,7 @@ def test_cli_uses_configured_shuffle_value_when_option_is_not_provided(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -782,6 +789,7 @@ def test_cli_shuffle_option_overrides_disabled_configuration(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -817,6 +825,7 @@ def test_cli_without_shuffle_option_preserves_disabled_configuration(
         path: Path,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle_questions: bool = False,
     ) -> None:
         called_with["path"] = path
@@ -867,6 +876,7 @@ def test_create_runner_passes_category_to_create_quiz(
         repository,
         *,
         category: str | None = None,
+        difficulty: Difficulty | None = None,
         shuffle: bool = False,
     ) -> Quiz:
         called_with["repository"] = repository
@@ -913,10 +923,11 @@ def test_run_quiz_passes_category_to_create_runner(
     runner.current_question.total = 1
 
     def fake_create_runner(
-        questions_path: Path,
-        *,
-        category: str | None = None,
-        shuffle_questions: bool = False,
+            questions_path: Path,
+            *,
+            category: str | None = None,
+            difficulty: Difficulty | None = None,
+            shuffle_questions: bool = False,
     ) -> QuizRunner:
         called_with["questions_path"] = questions_path
         called_with["category"] = category
@@ -950,10 +961,11 @@ def test_cli_passes_configured_category_to_run_quiz(
     called_with: dict[str, object] = {}
 
     def fake_run_quiz(
-        questions_path: Path,
-        *,
-        category: str | None = None,
-        shuffle_questions: bool = False,
+            questions_path: Path,
+            *,
+            category: str | None = None,
+            difficulty: Difficulty | None = None,
+            shuffle_questions: bool = False,
     ) -> None:
         called_with["questions_path"] = questions_path
         called_with["category"] = category
