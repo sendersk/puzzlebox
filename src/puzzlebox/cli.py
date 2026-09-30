@@ -49,6 +49,11 @@ def cli(
         "--shuffle",
         help="Shuffle quiz questions before starting.",
     ),
+    difficulty: Difficulty | None = typer.Option(
+        None,
+        "--difficulty",
+        help="Filter quiz questions by difficulty.",
+    ),
     version: bool = typer.Option(
         False,
         "--version",
