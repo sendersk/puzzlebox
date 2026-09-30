@@ -72,16 +72,15 @@ def cli(
         raise typer.Exit(code=1) from exc
 
     questions_path = questions or config.questions_path
-    shuffle_questions = (
-        config.shuffle_questions
-        if shuffle is None
-        else shuffle
-    )
+
+    shuffle_questions = config.shuffle_questions if shuffle is None else shuffle
+
+    selected_difficulty = config.difficulty if difficulty is None else difficulty
 
     run_quiz(
         questions_path,
         category=config.category,
-        difficulty=config.difficulty,
+        difficulty=selected_difficulty,
         shuffle_questions=shuffle_questions,
     )
 
