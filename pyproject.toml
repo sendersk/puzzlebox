@@ -1,6 +1,6 @@
 [project]
 name = "puzzlebox"
-version = "0.1.0"
+version = "1.0.0"
 description = "A lightweight Python desktop quiz application with multiple-choice questions, scoring, and extensible question sources."
 readme = "README.md"
 requires-python = ">=3.13"
