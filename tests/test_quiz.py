@@ -251,7 +251,9 @@ def test_filter_questions_by_category_ignores_surrounding_whitespace() -> None:
     assert result == (question,)
 
 
-def test_filter_questions_by_category_returns_all_questions_when_category_is_none() -> None:
+def test_filter_questions_by_category_returns_all_questions_when_category_is_none() -> (
+    None
+):
     """Test that no category filter returns the original questions."""
     questions = (
         Question(
@@ -275,7 +277,9 @@ def test_filter_questions_by_category_returns_all_questions_when_category_is_non
     assert result == questions
 
 
-def test_filter_questions_by_category_returns_empty_tuple_for_unknown_category() -> None:
+def test_filter_questions_by_category_returns_empty_tuple_for_unknown_category() -> (
+    None
+):
     """Test that an unknown category produces no questions."""
     question = Question(
         text="What is 2 + 2?",

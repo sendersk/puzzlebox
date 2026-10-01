@@ -67,7 +67,5 @@ def filter_questions_by_difficulty(
         return questions
 
     return tuple(
-        question
-        for question in questions
-        if question.difficulty == difficulty
+        question for question in questions if question.difficulty == difficulty
     )
