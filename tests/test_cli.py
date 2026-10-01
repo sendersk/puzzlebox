@@ -1263,3 +1263,48 @@ def test_cli_uses_configured_difficulty_when_option_is_not_provided(
 
     assert result.exit_code == 0
     assert called_with["difficulty"] == Difficulty.HARD
+
+
+def test_cli_passes_all_quiz_filters_to_run_quiz(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """Test that CLI passes all configured quiz filters to run_quiz."""
+    questions_path = tmp_path / "questions.json"
+    questions_path.write_text("[]", encoding="utf-8")
+
+    called_with: dict[str, object] = {}
+
+    def fake_run_quiz(
+        path: Path,
+        *,
+        category: str | None = None,
+        difficulty: Difficulty | None = None,
+        shuffle_questions: bool = False,
+    ) -> None:
+        called_with["path"] = path
+        called_with["category"] = category
+        called_with["difficulty"] = difficulty
+        called_with["shuffle_questions"] = shuffle_questions
+
+    monkeypatch.setattr(
+        "puzzlebox.cli.run_quiz",
+        fake_run_quiz,
+    )
+    monkeypatch.setattr(
+        "puzzlebox.cli.load_config",
+        lambda _: AppConfig(
+            questions_path=questions_path,
+            category="Math",
+            difficulty=Difficulty.HARD,
+            shuffle_questions=True,
+        ),
+    )
+
+    result = runner.invoke(app, [])
+
+    assert result.exit_code == 0
+    assert called_with["path"] == questions_path
+    assert called_with["category"] == "Math"
+    assert called_with["difficulty"] == Difficulty.HARD
+    assert called_with["shuffle_questions"] is True
