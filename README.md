@@ -7,6 +7,8 @@
 [![Ruff](https://img.shields.io/badge/code%20quality-Ruff-D7FF64?logo=ruff\&logoColor=black)](https://docs.astral.sh/ruff/)
 [![MyPy](https://img.shields.io/badge/type%20checking-MyPy-2F74C0?logo=python\&logoColor=white)](https://mypy.readthedocs.io/)
 
+**Version: 1.0.0**
+
 PuzzleBox is a small Python quiz application built as a learning and portfolio project.
 
 The project focuses on clean Python code, domain modelling, validation, automated testing, error handling, configuration, and a clear separation between application logic and presentation.
@@ -18,11 +20,14 @@ The project focuses on clean Python code, domain modelling, validation, automate
 * Pydantic-based input validation
 * Domain models implemented with Python dataclasses
 * Difficulty levels: easy, medium, hard
+* Filtering questions by category
+* Filtering questions by difficulty
+* Optional question shuffling
 * Repository abstraction for question loading
 * Quiz session and scoring logic
 * Interactive command-line interface
-* Configuration through YAML
-* Command-line option for overriding the question file
+* YAML-based application configuration
+* Command-line options for overriding configuration
 * Structured application logging
 * Custom error handling for invalid question data
 * Automated tests with pytest
@@ -106,7 +111,15 @@ Start PuzzleBox with:
 uv run puzzlebox
 ```
 
-### Use a custom question file
+### Command-line options
+
+Display the available options with:
+
+```bash
+uv run puzzlebox --help
+```
+
+#### Custom question file
 
 A different JSON file can be supplied using the `--questions` or `-q` option:
 
@@ -120,9 +133,45 @@ or:
 uv run puzzlebox -q path/to/questions.json
 ```
 
+The command-line option takes precedence over the path configured in `config/settings.yaml`.
+
+#### Shuffle questions
+
+Questions can be shuffled before the quiz starts:
+
+```bash
+uv run puzzlebox --shuffle
+```
+
+#### Filter by difficulty
+
+Questions can be filtered by difficulty:
+
+```bash
+uv run puzzlebox --difficulty easy
+```
+
+Available values are:
+
+```text
+easy
+medium
+hard
+```
+
+#### Combine filters
+
+Category and difficulty filters can be configured together:
+
+```bash
+uv run puzzlebox --difficulty hard
+```
+
+Category filtering is currently configured through `config/settings.yaml`.
+
 ### Configuration
 
-The default question file is configured in:
+The application configuration is stored in:
 
 ```text
 config/settings.yaml
@@ -132,9 +181,19 @@ Example:
 
 ```yaml
 questions_path: resources/questions.json
+shuffle_questions: false
+category: null
+difficulty: null
 ```
 
-The `--questions` / `-q` command-line option takes precedence over the configured path.
+The configuration supports:
+
+* `questions_path` — path to the JSON question file
+* `shuffle_questions` — whether to shuffle questions
+* `category` — optional question category filter
+* `difficulty` — optional difficulty filter
+
+Command-line options override the corresponding configuration values where supported.
 
 ## Question Format
 
@@ -213,7 +272,6 @@ PuzzleBox uses a small layered structure designed to keep responsibilities separ
 * `Quiz`
 * `QuizSession`
 * `Difficulty`
-* `QuestionView`
 
 The domain models contain business rules such as question validation, scoring, and quiz session state.
 
@@ -234,11 +292,13 @@ This keeps the quiz creation logic independent of the concrete storage mechanism
 
 **Quiz**
 
-`quiz.py` creates a `Quiz` from a question repository.
+`quiz.py` creates a `Quiz` from a question repository and applies optional category, difficulty, and shuffle operations.
 
 **Runner**
 
 `runner.py` provides an interface between the quiz session and the presentation layer.
+
+It also contains `QuestionView`, a presentation-oriented view model used to expose question data to the CLI.
 
 **Presentation**
 
@@ -270,6 +330,8 @@ uv run pytest --cov=src/puzzlebox --cov-report=term-missing
 
 The project enforces a minimum test coverage of **90%**.
 
+The current v1.0.0 test suite contains **134 tests** and achieves approximately **99.45% coverage**.
+
 The test suite covers:
 
 * domain model validation,
@@ -277,8 +339,11 @@ The test suite covers:
 * question loading,
 * invalid input handling,
 * repository behaviour,
+* question filtering,
+* question shuffling,
 * configuration loading,
 * CLI behaviour,
+* command-line option precedence,
 * presentation functions,
 * logging,
 * error handling.
@@ -320,7 +385,7 @@ uv run pytest --cov=src/puzzlebox --cov-report=term-missing
 
 ## Development
 
-PuzzleBox is developed incrementally, with a focus on small, testable changes.
+PuzzleBox was developed incrementally, with a focus on small, testable changes.
 
 The project follows several principles:
 
@@ -364,7 +429,22 @@ The project is used to practice:
 
 ## Roadmap
 
-The initial goal is to complete a stable **v1.0.0** release with a clean, well-tested CLI application.
+The initial development goal was to complete a stable **v1.0.0** release with a clean, well-tested CLI application.
+
+Version 1.0.0 provides the core quiz functionality, including:
+
+* JSON-based question loading
+* input validation
+* quiz session management
+* scoring
+* category and difficulty filtering
+* question shuffling
+* YAML configuration
+* CLI configuration overrides
+* structured logging
+* automated testing
+* static type checking
+* linting and formatting
 
 Possible future improvements may be considered for later versions rather than being added to the initial release.
 
@@ -372,8 +452,6 @@ Examples include:
 
 * graphical user interface
 * additional quiz modes
-* question filtering
-* randomized questions
 * persistent results
 * additional question sources
 * improved user experience
