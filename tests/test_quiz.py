@@ -553,3 +553,60 @@ def test_create_quiz_filters_by_category_and_difficulty_before_shuffle(
     )
 
     assert quiz.questions == (questions[1],)
+
+
+def test_create_quiz_applies_category_and_difficulty_before_shuffle(
+    monkeypatch,
+) -> None:
+    """Test that category and difficulty filters are applied before shuffling."""
+    questions = (
+        Question(
+            text="Math easy",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.EASY,
+        ),
+        Question(
+            text="Math hard",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Math",
+            difficulty=Difficulty.HARD,
+        ),
+        Question(
+            text="Science hard",
+            answers=("A", "B"),
+            correct_answer="A",
+            category="Science",
+            difficulty=Difficulty.HARD,
+        ),
+    )
+
+    class FakeRepository:
+        def get_questions(self) -> tuple[Question, ...]:
+            return questions
+
+    shuffled_questions: tuple[Question, ...] = ()
+
+    def fake_shuffle(
+        filtered: tuple[Question, ...],
+    ) -> tuple[Question, ...]:
+        nonlocal shuffled_questions
+        shuffled_questions = filtered
+        return filtered
+
+    monkeypatch.setattr(
+        "puzzlebox.quiz.shuffle_questions",
+        fake_shuffle,
+    )
+
+    quiz = create_quiz(
+        FakeRepository(),
+        category="math",
+        difficulty=Difficulty.HARD,
+        shuffle=True,
+    )
+
+    assert shuffled_questions == (questions[1],)
+    assert quiz.questions == (questions[1],)
